@@ -1,6 +1,8 @@
 #Requires -RunAsAdministrator
-function Install-AzPowerShellModule()
+function Install-AzPowerShellModule
 {
+    [CmdletBinding()]
+    
     $ErrorActionPreference = 'Stop'
 
     # First check that AzureRM is installed and if it is delete all versions
