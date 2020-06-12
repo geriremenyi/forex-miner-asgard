@@ -58,15 +58,17 @@ function Test-ArmTemplate
         }
     }
 
-    # Testing the ARM template agains the resource group
+    # Testing the ARM template against the resource group
     if ($ArmParametersFile)
     {
         Write-Host "[Test-ArmTemplate] Testing teamplate file '$ArmTemplateFileName' and parameters file 'ArmParametersFileName' against the resource group '$($ResourceGroup.Name)'..." -NoNewline
-        $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ArmTemplateFile.FullName -TemplateParameterFile $ArmParametersFile.FullName
+        $ExpandedArmTemplate = Expand-LinkedArmTemplates -ArmTemplateFilePath $ArmTemplateFile.FullName
+        $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ExpandedArmTemplate -TemplateParameterFile $ArmParametersFile.FullName
     }
     else {
         Write-Host "[Test-ArmTemplate] Testing teamplate file '$ArmTemplateFileName' and parameters file 'ArmParametersFileName' against the resource group '$($ResourceGroup.Name)'..." -NoNewline
-        $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ArmTemplateFile.FullName
+        $ExpandedArmTemplate = Expand-LinkedArmTemplates -ArmTemplateFilePath $ArmTemplateFile.FullName
+        $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ExpandedArmTemplate
     }
     if($ArmErrors)
     {
