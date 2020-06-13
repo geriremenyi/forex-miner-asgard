@@ -6,17 +6,36 @@
     "resources": [
         {
             "type": "Microsoft.Resources/deployments",
-            "name": "ForexMinerVNet",
+            "name": "forexminervnetdpl",
             "apiVersion": "2019-05-01",
             "properties": {
                 "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
                 "templateLink": {
-                    "uri": "./vnet/VNet.template.json",
-                    "contentVersion":"1.0.0.0"
+                    "uri": "./vnet/VNet.template.json"
                 },
                 "parametersLink": {
-                    "uri": "./vnet/VNet.parameters.json",
-                    "contentVersion":"1.0.0.0"
+                    "uri": "./vnet/VNet.parameters.json"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "forexminersadpl",
+            "apiVersion": "2019-05-01",
+            "dependsOn": [ "forexminervnetdpl" ],
+            "properties": {
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "templateLink": {
+                    "uri": "./storage/StorageAccount.template.json"
+                },
+                "parametersLink": {
+                    "uri": "./storage/StorageAccount.parameters.json"
                 }
             }
         }

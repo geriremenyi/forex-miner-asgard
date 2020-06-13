@@ -5,9 +5,9 @@ function Test-ArmTemplate
         [Parameter(Mandatory=$false, HelpMessage='The resource group which the template should be tested agains')]
         [string] $ResourceGroupName = 'forex-miner',
         [Parameter(Mandatory=$false, HelpMessage='The template file to test')]
-        [string] $ArmTemplateFileName = 'ForexMiner.template.json',
+        [string] $ArmTemplateFilePath = 'ForexMiner.template.json',
         [Parameter(Mandatory=$false, HelpMessage='The parameters file for the template file to test')]
-        [string] $ArmParametersFileName
+        [string] $ArmParametersFilePath = $null
     )
 
     # Check that the resource group exist
@@ -21,40 +21,27 @@ function Test-ArmTemplate
         Write-Host 'OK' -ForegroundColor Green
     }
 
-    # Searching for the ARM template file
-    Write-Host "[Test-ArmTemplate] Searching for the template file '$ArmTemplateFileName'..." -NoNewline
-    $ArmTemplateFile = Get-ChildItem (Join-Path -Resolve $PSScriptRoot '..\templates') -Recurse -Filter $ArmTemplateFileName -ErrorAction SilentlyContinue
-    if(!$ArmTemplateFile)
+    # Testing the ARM template file path
+    Write-Host "[Test-ArmTemplate] Checking that template path '$ArmTemplateFilePath' exists..." -NoNewline
+    if (!(Test-Path $ArmTemplateFilePath))
     {
         Write-Host 'FAILED' -ForegroundColor Red
-        throw "[Test-ArmTemplate] Template file '$ArmTemplateFileName' doesn't exist"
+        throw "[Test-ArmTemplate] Template file '$ArmTemplateFilePath' doesn't exist"
     }
-    else {
+    else
+    {
         Write-Host 'OK' -ForegroundColor Green
     }
 
     # Searching for the ARM parameters file (if given)
-    if($ArmParametersFileName)
+    $ArmParametersFilePassed = ($ArmParametersFilePath -and !([string]::IsNullOrEmpty($ArmParametersFilePath)))
+    if($ArmParametersFilePassed)
     {
-        Write-Host "[Test-ArmTemplate] Searching for the parameters file '$ArmParametersFileName'..." -NoNewline
-        $ArmParametersFile = Get-ChildItem (Join-Path -Resolve $PSScriptRoot '..\templates') -Recurse -Filter $ArmParametersFileName -ErrorAction SilentlyContinue
-        if(!$ArmParametersFile)
+        Write-Host "[Test-ArmTemplate] Checking that parameters path '$ArmParametersFilePath' exists..." -NoNewline
+        if (!(Test-Path $ArmParametersFilePath))
         {
             Write-Host 'FAILED' -ForegroundColor Red
-            throw "[Test-ArmTemplate] Parameters file '$ArmParametersFile' doesn't exist"
-        }
-        else {
-            Write-Host 'OK' -ForegroundColor Green
-
-            Write-Host "[Test-ArmTemplate] Checking that the template and the parameters file are in the same folder..." -NoNewline
-            if($ArmTemplateFile.Parent.FullName -eq $ArmParametersFile.Parent.FullName)
-            {
-                Write-Host 'OK' -ForegroundColor Green
-            }
-            else
-            {
-                Write-Host 'FAILED' -ForegroundColor Yellow
-            }
+            throw "[Test-ArmTemplate] Parameters file '$ArmParametersFilePath' doesn't exist"
         }
     }
 
@@ -63,32 +50,37 @@ function Test-ArmTemplate
 
     # Testing the ARM template against the resource group
     try {
-        if ($ArmParametersFileName)
+        Write-Host "[Test-ArmTemplate] Testing template file '$ArmTemplateFilePath' $(if ($ArmParametersFilePassed) { "and parameters file '$ArmParametersFilePath'" })against the resource group '$($ResourceGroup.ResourceGroupName)'..." -NoNewline
+        $ExpandedArmTemplateFilePath = Expand-LinkedArmTemplates -ArmTemplateFilePath $ArmTemplateFilePath
+        if($ArmParametersFilePassed)
         {
-            Write-Host "[Test-ArmTemplate] Testing teamplate file '$ArmTemplateFileName' and parameters file '$ArmParametersFileName' against the resource group '$($ResourceGroup.ResourceGroupName)'..." -NoNewline
-            $ExpandedArmTemplate = Expand-LinkedArmTemplates -ArmTemplateFilePath $ArmTemplateFile.FullName
-            $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ExpandedArmTemplate -TemplateParameterFile $ArmParametersFile.FullName
+            $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ExpandedArmTemplateFilePath -TemplateParameterFile $ArmParametersFilePath
         }
-        else {
-            Write-Host "[Test-ArmTemplate] Testing teamplate file '$ArmTemplateFileName' against the resource group '$($ResourceGroup.ResourceGroupName)'..." -NoNewline
-            $ExpandedArmTemplate = Expand-LinkedArmTemplates -ArmTemplateFilePath $ArmTemplateFile.FullName
-            $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ExpandedArmTemplate
+        else
+        {
+            $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ExpandedArmTemplateFilePath
         }
-        if($ArmErrors)
+
+        if($ArmErrors -and !([string]::IsNullOrEmpty($ArmErrors)))
         {
             Write-Host 'FAILED' -ForegroundColor Red
-            throw "[Test-ArmTemplate] ARM template test failed. Errors: $(($ArmErrors | Select-Object Message) -Join ", ")"
+            throw "[Test-ArmTemplate] ARM template test failed. Errors: $($ArmErrors | ConvertTo-Json -Depth 100 -Compress)"
         }
         else
         {
             Write-Host 'OK' -ForegroundColor Green
         }
+
+        # Cleanup temp ARM folder
+        Resolve-Path (Join-Path $PSScriptRoot '..\..\temp\arm') -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
     }
     catch {
-        Write-Host 'FAILED' -ForegroundColor Red
+        # Custom thrown exception already handled FAILED indicatior
+        if ($_.Exception.Message -notlike '* ARM template test failed. Errors: *')
+        {
+            Write-Host 'FAILED' -ForegroundColor Red
+        }
+        Resolve-Path (Join-Path $PSScriptRoot '..\..\temp\arm') -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
         throw $_
     }
-
-    # Cleanup temp ARM folder
-    Resolve-Path (Join-Path $PSScriptRoot '..\..\temp\arm') -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
 }
