@@ -5,7 +5,9 @@ function Expand-LinkedArmTemplates
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true, HelpMessage='The template file to expand')]
-        [string] $ArmTemplateFilePath
+        [string] $ArmTemplateFilePath,
+        [Parameter(Mandatory=$false, HelpMessage='The list of already visited files')]
+        [psobject[]] $VisitedArmTemplateFiles = @(@{})
     )
 
     $ErrorActionPreference = 'Stop'
@@ -38,12 +40,22 @@ function Expand-LinkedArmTemplates
         
         if($LinkedLocalTemplateFile)
         {
-            # Expand template link
+            # Check linked template file
             $TemplateFileFullPath = Join-Path -Resolve (Split-Path $ArmTemplateFilePath -Parent) $LinkedLocalTemplateFile.uri
             if (!(Test-Path $TemplateFileFullPath))
             {
                 throw "[Expand-LinkedArmTemplates] The given ARM template path '$TemplateFileFullPath' doesn't exist in the template file 'ArmTemplateFilePath'"
             }
+
+            # Check for cyclic dependencies to avoid endless recursion
+            $CurrentArmTemplateFileAlreadyVisited = $VisitedArmTemplateFiles | Where-Object { $_.FileName -eq $TemplateFileFullPath }
+            if($CurrentArmTemplateFileAlreadyVisited)
+            {
+                throw '[Expand-LinkedArmTemplates] There is a cycle in the linked ARM template files. Cannot expand.'
+            }
+            $VisitedArmTemplateFiles += @{ FileName =  $TemplateFileFullPath }
+
+            # Expand linked template file
             $LinkedDeployment.properties | Add-Member -NotePropertyName template -NotePropertyValue ((Get-Content $TemplateFileFullPath) | Out-String | ConvertFrom-Json)
             $LinkedDeployment.properties.PSObject.Properties.Remove('templateLink')
         }
