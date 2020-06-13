@@ -34,7 +34,7 @@ function Test-ArmTemplate
     }
 
     # Searching for the ARM parameters file (if given)
-    if($ArmParametersFile)
+    if($ArmParametersFileName)
     {
         Write-Host "[Test-ArmTemplate] Searching for the parameters file '$ArmParametersFileName'..." -NoNewline
         $ArmParametersFile = Get-ChildItem (Join-Path -Resolve $PSScriptRoot '..\templates') -Recurse -Filter $ArmParametersFileName -ErrorAction SilentlyContinue
@@ -58,25 +58,37 @@ function Test-ArmTemplate
         }
     }
 
+    # Cleanup temp ARM folder
+    Resolve-Path (Join-Path $PSScriptRoot '..\..\temp\arm') -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
+
     # Testing the ARM template against the resource group
-    if ($ArmParametersFile)
-    {
-        Write-Host "[Test-ArmTemplate] Testing teamplate file '$ArmTemplateFileName' and parameters file 'ArmParametersFileName' against the resource group '$($ResourceGroup.Name)'..." -NoNewline
-        $ExpandedArmTemplate = Expand-LinkedArmTemplates -ArmTemplateFilePath $ArmTemplateFile.FullName
-        $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ExpandedArmTemplate -TemplateParameterFile $ArmParametersFile.FullName
+    try {
+        if ($ArmParametersFileName)
+        {
+            Write-Host "[Test-ArmTemplate] Testing teamplate file '$ArmTemplateFileName' and parameters file '$ArmParametersFileName' against the resource group '$($ResourceGroup.ResourceGroupName)'..." -NoNewline
+            $ExpandedArmTemplate = Expand-LinkedArmTemplates -ArmTemplateFilePath $ArmTemplateFile.FullName
+            $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ExpandedArmTemplate -TemplateParameterFile $ArmParametersFile.FullName
+        }
+        else {
+            Write-Host "[Test-ArmTemplate] Testing teamplate file '$ArmTemplateFileName' against the resource group '$($ResourceGroup.ResourceGroupName)'..." -NoNewline
+            $ExpandedArmTemplate = Expand-LinkedArmTemplates -ArmTemplateFilePath $ArmTemplateFile.FullName
+            $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ExpandedArmTemplate
+        }
+        if($ArmErrors)
+        {
+            Write-Host 'FAILED' -ForegroundColor Red
+            throw "[Test-ArmTemplate] ARM template test failed. Errors: $(($ArmErrors | Select-Object Message) -Join ", ")"
+        }
+        else
+        {
+            Write-Host 'OK' -ForegroundColor Green
+        }
     }
-    else {
-        Write-Host "[Test-ArmTemplate] Testing teamplate file '$ArmTemplateFileName' and parameters file 'ArmParametersFileName' against the resource group '$($ResourceGroup.Name)'..." -NoNewline
-        $ExpandedArmTemplate = Expand-LinkedArmTemplates -ArmTemplateFilePath $ArmTemplateFile.FullName
-        $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ExpandedArmTemplate
-    }
-    if($ArmErrors)
-    {
+    catch {
         Write-Host 'FAILED' -ForegroundColor Red
-        throw "[Test-ArmTemplate] ARM template test failed. Errors: $(($ArmErrors | Select-Object Message) -Join ", ")"
+        throw $_
     }
-    else 
-    {
-        Write-Host 'OK' -ForegroundColor Green
-    }
+
+    # Cleanup temp ARM folder
+    Resolve-Path (Join-Path $PSScriptRoot '..\..\temp\arm') -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
 }
