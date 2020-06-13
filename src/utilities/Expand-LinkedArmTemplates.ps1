@@ -30,7 +30,7 @@ function Expand-LinkedArmTemplates
              $ParametersFileFullPath = Join-Path -Resolve (Split-Path $ArmTemplateFilePath -Parent) $LinkedLocalParametersFile.uri
              if (!(Test-Path $ParametersFileFullPath))
              {
-                 throw "[Expand-LinkedArmTemplates] The given ARM parameters path '$TemplateFileFullPath' doesn't exist in the template file 'ArmTemplateFilePath'"
+                throw "[Expand-LinkedArmTemplates] The given ARM parameters path '$TemplateFileFullPath' doesn't exist in the template file 'ArmTemplateFilePath'"
              }
              $LinkedDeployment.properties | Add-Member -NotePropertyName parameters -NotePropertyValue ((Get-Content $ParametersFileFullPath) | Out-String | ConvertFrom-Json)
              $LinkedDeployment.properties.PSObject.Properties.Remove('parametersLink')
@@ -51,7 +51,7 @@ function Expand-LinkedArmTemplates
         if($LinkedLocalParametersFile -or $LinkedLocalTemplateFile)
         {
             # There was an expansion so a new deployment json file must be created
-            $NewTempArmFilePath = Join-Path $PSScriptRoot "..\..\temp\$((New-Guid).Guid).json"
+            $NewTempArmFilePath = Join-Path $PSScriptRoot "..\..\temp\arm\$((New-Guid).Guid).json"
             New-Item $NewTempArmFilePath -Force | Out-Null
             Set-Content $NewTempArmFilePath -Value ($ArmJson | ConvertTo-Json -Depth 100 -Compress)
 
