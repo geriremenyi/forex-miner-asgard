@@ -2,43 +2,19 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "location": {
-            "type": "string"
-        },
         "virtualNetworkName": {
             "type": "string"
         },
-        "resourceGroup": {
-            "type": "string"
-        },
-        "addressSpaces": {
+        "mainAddressSpaces": {
             "type": "array"
         },
-        "ipv6Enabled": {
-            "type": "bool"
-        },
-        "subnetCount": {
-            "type": "int"
-        },
-        "subnet0_name": {
+        "frontendSubnetAddressSpace": {
             "type": "string"
         },
-        "subnet0_addressRange": {
-            "type": "string"
-        },
-        "subnet1_name": {
-            "type": "string"
-        },
-        "subnet1_addressRange": {
+        "backendSubnetAddressSpace": {
             "type": "string"
         },
         "ddosProtectionPlanEnabled": {
-            "type": "bool"
-        },
-        "firewallEnabled": {
-            "type": "bool"
-        },
-        "bastionEnabled": {
             "type": "bool"
         }
     },
@@ -48,28 +24,29 @@
             "name": "[parameters('virtualNetworkName')]",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2019-09-01",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "dependsOn": [],
-            "tags": {
-                "application": "forex-miner"
-            },
             "properties": {
                 "addressSpace": {
-                    "addressPrefixes": [
-                        "10.0.0.0/16"
-                    ]
+                    "addressPrefixes": "[parameters('mainAddressSpaces')]"
                 },
                 "subnets": [
                     {
-                        "name": "ForexMinerVNetFrontend",
+                        "name": "[concat(parameters('virtualNetworkName'), 'fe')]",
                         "properties": {
-                            "addressPrefix": "10.0.0.0/24"
+                            "addressPrefix": "[parameters('frontendSubnetAddressSpace')]"
                         }
                     },
                     {
-                        "name": "ForexMinerVNetBackend",
+                        "name": "[concat(parameters('virtualNetworkName'), 'be')]",
                         "properties": {
-                            "addressPrefix": "10.0.1.0/24"
+                            "addressPrefix": "[parameters('backendSubnetAddressSpace')]",
+                            "serviceEndpoints": [
+                                {
+                                    "service": "Microsoft.Storage",
+                                    "locations": [ "[resourceGroup().location]" ]
+                                }
+                            ]
                         }
                     }
                 ],

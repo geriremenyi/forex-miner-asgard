@@ -21,10 +21,13 @@ function Expand-LinkedArmTemplates
     # Search for local file system linked template/parameters reference
     $ArmJson = Get-Content $ArmTemplateFilePath | Out-String | ConvertFrom-Json
     $LinkedDeployments = $ArmJson.resources | Where-Object { $_.type -eq 'Microsoft.Resources/deployments' }
+    $ExpansionHappened = $false
+    $TemplateExpansionHappened = $false
     foreach ($LinkedDeployment in $LinkedDeployments)
     {
-        $LinkedLocalTemplateFile = $LinkedDeployment.properties.templateLink | Where-Object { !([string]::IsNullOrEmpty($_.uri)) -and !($_.uri -contains 'http:' -or $_.uri -contains 'https://') }
-        $LinkedLocalParametersFile = $LinkedDeployment.properties.parametersLink | Where-Object { !([string]::IsNullOrEmpty($_.uri)) -and !($_.uri -contains 'http:' -or $_.uri -contains 'https://') }
+
+        $LinkedLocalTemplateFile = $LinkedDeployment.properties.templateLink | Where-Object { !([string]::IsNullOrEmpty($_.uri)) -and !($_.uri -contains 'http://' -or $_.uri -contains 'https://') }
+        $LinkedLocalParametersFile = $LinkedDeployment.properties.parametersLink | Where-Object { !([string]::IsNullOrEmpty($_.uri)) -and !($_.uri -contains 'http://' -or $_.uri -contains 'https://') }
 
         if($LinkedLocalParametersFile)
         {
@@ -34,11 +37,13 @@ function Expand-LinkedArmTemplates
              {
                 throw "[Expand-LinkedArmTemplates] The given ARM parameters path '$TemplateFileFullPath' doesn't exist in the template file 'ArmTemplateFilePath'"
              }
-             $LinkedDeployment.properties | Add-Member -NotePropertyName parameters -NotePropertyValue ((Get-Content $ParametersFileFullPath) | Out-String | ConvertFrom-Json)
+             $ParametersDefined = (Get-Content $ParametersFileFullPath | Out-String | ConvertFrom-Json).parameters
+             $LinkedDeployment.properties | Add-Member -NotePropertyName parameters -NotePropertyValue $ParametersDefined
              $LinkedDeployment.properties.PSObject.Properties.Remove('parametersLink')
+             $ExpansionHappened = $true
         }
         
-        if($LinkedLocalTemplateFile)
+        if($LinkedLocalTemplateFile)  
         {
             # Check linked template file
             $TemplateFileFullPath = Join-Path -Resolve (Split-Path $ArmTemplateFilePath -Parent) $LinkedLocalTemplateFile.uri
@@ -58,27 +63,28 @@ function Expand-LinkedArmTemplates
             # Expand linked template file
             $LinkedDeployment.properties | Add-Member -NotePropertyName template -NotePropertyValue ((Get-Content $TemplateFileFullPath) | Out-String | ConvertFrom-Json)
             $LinkedDeployment.properties.PSObject.Properties.Remove('templateLink')
+
+            $ExpansionHappened = $true
+            $TemplateExpansionHappened = $true
         }
-
-        if($LinkedLocalParametersFile -or $LinkedLocalTemplateFile)
-        {
-            # There was an expansion so a new deployment json file must be created
-            $NewTempArmFilePath = Join-Path $PSScriptRoot "..\..\temp\arm\$((New-Guid).Guid).json"
-            New-Item $NewTempArmFilePath -Force | Out-Null
-            Set-Content $NewTempArmFilePath -Value ($ArmJson | ConvertTo-Json -Depth 100 -Compress)
-
-            if ($LinkedLocalTemplateFile)
-            {
-                # There was a template expansion so there is a chance that there are more linked templates in the newly expanded template file
-                # Recursively call this function to expand even more if needed
-                Expand-LinkedArmTemplates -ArmTemplateFilePath (Resolve-Path $NewTempArmFilePath).Path | Out-Null
-            }
-
-            return (Resolve-Path $NewTempArmFilePath).Path
-        }
-
-        return $ArmTemplateFilePath
     }
 
+    if($ExpansionHappened)
+    {
+        # There was an expansion so a new deployment json file must be created
+        $NewTempArmFilePath = Join-Path $PSScriptRoot "..\..\temp\arm\$((New-Guid).Guid).json"
+        New-Item $NewTempArmFilePath -Force | Out-Null
+        Set-Content $NewTempArmFilePath -Value ($ArmJson | ConvertTo-Json -Depth 100 -Compress)
+
+        if ($TemplateExpansionHappened)
+        {
+            # There was a template expansion so there is a chance that there are more linked templates in the newly expanded template file
+            # Recursively call this function to expand even more if needed
+            Expand-LinkedArmTemplates -ArmTemplateFilePath (Resolve-Path $NewTempArmFilePath).Path -VisitedArmTemplateFiles $VisitedArmTemplateFiles | Out-Null
+        }
+
+        return (Resolve-Path $NewTempArmFilePath).Path
+    }
+        
     return $ArmTemplateFilePath
 }
