@@ -1,15 +1,22 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {},
-    "variables": {},
+    "variables": {
+        "namingPrefix": "forexminer",
+        "namingPostfix": "dpl",
+        "deploymentMode": "Incremental",
+        "vnetDeploymentName": "[concat(variables('namingPrefix'), 'vnet', variables('namingPostfix'))]",
+        "keyvaultDeploymentName": "[concat(variables('namingPrefix'), 'kv', variables('namingPostfix'))]",
+        "storageDeploymentName": "[concat(variables('namingPrefix'), 'sa', variables('namingPostfix'))]",
+        "sqlDeploymentName": "[concat(variables('namingPrefix'), 'sql', variables('namingPostfix'))]"
+    },
     "resources": [
         {
             "type": "Microsoft.Resources/deployments",
-            "name": "forexminervnetdpl",
-            "apiVersion": "2019-05-01",
+            "name": "[variables('vnetDeploymentName')]",
+            "apiVersion": "2019-10-01",
             "properties": {
-                "mode": "Incremental",
+                "mode": "[variables('deploymentMode')]",
                 "expressionEvaluationOptions": {
                     "scope": "inner"
                 },
@@ -23,11 +30,33 @@
         },
         {
             "type": "Microsoft.Resources/deployments",
-            "name": "forexminersadpl",
-            "apiVersion": "2019-05-01",
-            "dependsOn": [ "forexminervnetdpl" ],
+            "name": "[variables('keyvaultDeploymentName')]",
+            "apiVersion": "2019-10-01",
+            "dependsOn": [ 
+                "[variables('vnetDeploymentName')]" 
+            ],
             "properties": {
-                "mode": "Incremental",
+                "mode": "[variables('deploymentMode')]",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "templateLink": {
+                    "uri": "./keyvault/KeyVault.template.json"
+                },
+                "parametersLink": {
+                    "uri": "./keyvault/KeyVault.parameters.json"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[variables('storageDeploymentName')]",
+            "apiVersion": "2019-10-01",
+            "dependsOn": [ 
+                "[variables('vnetDeploymentName')]" 
+            ],
+            "properties": {
+                "mode": "[variables('deploymentMode')]",
                 "expressionEvaluationOptions": {
                     "scope": "inner"
                 },
@@ -36,6 +65,23 @@
                 },
                 "parametersLink": {
                     "uri": "./storage/StorageAccount.parameters.json"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[variables('sqlDeploymentName')]",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "mode": "[variables('deploymentMode')]",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "templateLink": {
+                    "uri": "./sql/SqlServer.template.json"
+                },
+                "parametersLink": {
+                    "uri": "./sql/SqlServer.parameters.json"
                 }
             }
         }

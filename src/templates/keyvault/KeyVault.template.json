@@ -2,16 +2,19 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "accountType": {
+        "sku": {
             "type": "string"
         },
-        "kind": {
-            "type": "string"
+        "enabledForDeployment": {
+            "type": "bool"
         },
-        "accessTier": {
-            "type": "string"
+        "enabledForTemplateDeployment": {
+            "type": "bool"
         },
-        "supportsHttpsTrafficOnly": {
+        "enabledForDiskEncryption": {
+            "type": "bool"
+        },
+        "enableRbacAuthorization": {
             "type": "bool"
         },
         "networkAclsDefaultAction": {
@@ -20,27 +23,33 @@
         "networkAclsBypass": {
             "type": "string"
         },
-        "largeFileSharesState": {
+        "tenantId": {
             "type": "string"
         }
     },
     "variables": {
         "namingPrefix": "forexminer",
         "location": "[resourceGroup().location]",
-        "storageAccountName": "[concat(variables('namingPrefix'), 'sa')]",
+        "keyVaultName": "[concat(variables('namingPrefix'), 'kv')]",
         "virtualNetworkName": "[concat(variables('namingPrefix'), 'vnet')]",
         "backendSubnetName": "[concat(variables('virtualNetworkName'), 'be')]",
         "backendSubnetResource": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('backendSubnetName'))]"
     },
     "resources": [
-        {
-            "name": "[variables('storageAccountName')]",
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
+         {
+            "apiVersion": "2016-10-01",
+            "name": "[variables('keyVaultName')]",
             "location": "[variables('location')]",
+            "type": "Microsoft.KeyVault/vaults",
             "properties": {
-                "accessTier": "[parameters('accessTier')]",
-                "supportsHttpsTrafficOnly": "[parameters('supportsHttpsTrafficOnly')]",
+                "sku": {
+                    "name": "[parameters('sku')]",
+                    "family": "A"
+                },
+                "enabledForDeployment": "[parameters('enabledForDeployment')]",
+                "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
+                "enabledForDiskEncryption": "[parameters('enabledForDiskEncryption')]",
+                "enableRbacAuthorization": "[parameters('enableRbacAuthorization')]",
                 "networkAcls": {
                     "defaultAction": "[parameters('networkAclsDefaultAction')]",
                     "bypass": "[parameters('networkAclsBypass')]",
@@ -49,12 +58,9 @@
                         "id": "[variables('backendSubnetResource')]"
                     }]
                 },
-                "largeFileSharesState": "[parameters('largeFileSharesState')]"
-            },
-            "sku": {
-                "name": "[parameters('accountType')]"
-            },
-            "kind": "[parameters('kind')]"
+                "tenantId": "[parameters('tenantId')]",
+                "accessPolicies": []
+            }
         }
     ]
 }

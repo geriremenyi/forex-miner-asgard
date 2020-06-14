@@ -64,10 +64,10 @@ function New-ArmTemplateDeployment
         Write-Host "[New-ArmTemplateDeployment] Deploying ARM template file '$ArmTemplateFileName'$(if ($ArmParametersFilePassed) { "with ARM parameters file '$ArmParametersFileName'" }) with the deployment name '$DeploymentName'..." -NoNewline
         if ($ArmParametersFilePassed)
         {
-            New-AzResourceGroupDeployment -Name $DeploymentName -ResourceGroupName $ResourceGroupName -TemplateFile $ExpandedArmTemplateFilePath -TemplateParameterFile $ArmParametersFile.FullName
+            New-AzResourceGroupDeployment -Name $DeploymentName -ResourceGroupName $ResourceGroupName -TemplateFile $ExpandedArmTemplateFilePath -TemplateParameterFile $ArmParametersFile.FullName | Out-Null
         }
         else {
-            New-AzResourceGroupDeployment -Name $DeploymentName -ResourceGroupName $ResourceGroupName -TemplateFile $ExpandedArmTemplateFilePath
+            New-AzResourceGroupDeployment -Name $DeploymentName -ResourceGroupName $ResourceGroupName -TemplateFile $ExpandedArmTemplateFilePath | Out-Null
         }
         Write-Host 'OK' -ForegroundColor Green
 

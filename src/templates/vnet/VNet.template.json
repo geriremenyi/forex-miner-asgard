@@ -1,10 +1,7 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "virtualNetworkName": {
-            "type": "string"
-        },
         "mainAddressSpaces": {
             "type": "array"
         },
@@ -18,33 +15,46 @@
             "type": "bool"
         }
     },
-    "variables": {},
+    "variables": {
+        "namingPrefix": "forexminer",
+        "location": "[resourceGroup().location]",
+        "virtualNetworkName": "[concat(variables('namingPrefix'), 'vnet')]",
+        "frontendSubnetName": "[concat(variables('virtualNetworkName'), 'fe')]",
+        "backendSubnetName": "[concat(variables('virtualNetworkName'), 'be')]"
+    },
     "resources": [
         {
-            "name": "[parameters('virtualNetworkName')]",
+            "name": "[variables('virtualNetworkName')]",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2019-09-01",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [],
+            "location": "[variables('location')]",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": "[parameters('mainAddressSpaces')]"
                 },
                 "subnets": [
                     {
-                        "name": "[concat(parameters('virtualNetworkName'), 'fe')]",
+                        "name": "[variables('frontendSubnetName')]",
                         "properties": {
                             "addressPrefix": "[parameters('frontendSubnetAddressSpace')]"
                         }
                     },
                     {
-                        "name": "[concat(parameters('virtualNetworkName'), 'be')]",
+                        "name": "[variables('backendSubnetName')]",
                         "properties": {
                             "addressPrefix": "[parameters('backendSubnetAddressSpace')]",
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.Storage",
-                                    "locations": [ "[resourceGroup().location]" ]
+                                    "locations": [ 
+                                        "[variables('location')]" 
+                                    ]
+                                },
+                                {
+                                    "service": "Microsoft.KeyVault",
+                                    "locations": [ 
+                                        "[variables('location')]"
+                                    ]
                                 }
                             ]
                         }
