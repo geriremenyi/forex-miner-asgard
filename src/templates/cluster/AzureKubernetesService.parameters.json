@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "kubernetesVersion": {
+            "value": "1.15.11"
+        },
+        "enableRBAC": {
+            "value": true
+        },
+        "dnsPrefix": {
+            "value": "forexminerk8s"
+        },
+        "osDiskSizeGB": {
+            "value": 0
+        },
+        "frontendNodePoolVmSize": {
+            "value": "Standard_B2s"
+        },
+        "frontendNodePoolVmCount": {
+            "value": 1
+        },
+        "frontendNodePoolVmMinCount": {
+            "value": 1
+        },
+        "frontendNodePoolVmMaxCount": {
+            "value": 2
+        },
+        "backendNodePoolVmSize": {
+            "value": "Standard_B2s"
+        },
+        "backendNodePoolVmCount": {
+            "value": 1
+        },
+        "backendNodePoolVmMinCount": {
+            "value": 1
+        },
+        "backendNodePoolVmMaxCount": {
+            "value": 2
+        },
+        "networkPlugin": {
+            "value": "azure"
+        },
+        "serviceCidr": {
+            "value": "10.0.2.0/24"
+        },
+        "dnsServiceIP": {
+            "value": "10.0.2.10"
+        },
+        "dockerBridgeCidr": {
+            "value": "172.17.0.1/16"
+        },
+        "networkPolicy": {
+            "value": "calico"
+        },
+        "enablePrivateCluster": {
+            "value": false
+        },
+        "enableHttpApplicationRouting": {
+            "value": false
+        }
+    }
+}
