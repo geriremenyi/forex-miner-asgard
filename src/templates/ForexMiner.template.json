@@ -8,7 +8,8 @@
         "vnetDeploymentName": "[concat(variables('namingPrefix'), 'vnet', variables('namingPostfix'))]",
         "keyvaultDeploymentName": "[concat(variables('namingPrefix'), 'kv', variables('namingPostfix'))]",
         "storageDeploymentName": "[concat(variables('namingPrefix'), 'sa', variables('namingPostfix'))]",
-        "sqlDeploymentName": "[concat(variables('namingPrefix'), 'sql', variables('namingPostfix'))]"
+        "sqlDeploymentName": "[concat(variables('namingPrefix'), 'sql', variables('namingPostfix'))]",
+        "clusterDeploymentName": "[concat(variables('namingPrefix'), 'aks', variables('namingPostfix'))]"
     },
     "resources": [
         {
@@ -82,6 +83,23 @@
                 },
                 "parametersLink": {
                     "uri": "./sql/SqlServer.parameters.json"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[variables('clusterDeploymentName')]",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "mode": "[variables('deploymentMode')]",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "templateLink": {
+                    "uri": "./cluster/AzureKubernetesService.template.json"
+                },
+                "parametersLink": {
+                    "uri": "./cluster/AzureKubernetesService.parameters.json"
                 }
             }
         }
