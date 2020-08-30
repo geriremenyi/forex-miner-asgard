@@ -17,7 +17,9 @@ jobs:
         run: ./init.ps1
       - name: Create test RG
         shell: pwsh
-        run: New-AzureResourceGroup -ResourceGroupName "forex-miner-ci-test"
+        run: |
+          ./init.ps1
+          New-AzureResourceGroup -ResourceGroupName "forex-miner-ci-test"
       - name: Test template
         shell: pwsh
         run: Test-ArmTemplate -ResourceGroupName "forex-miner-ci-test"
