@@ -1,4 +1,4 @@
-function Connect-AzSubscription
+function Connect-AzureSubscription
 {
     [CmdletBinding()]
     param(
@@ -17,7 +17,7 @@ function Connect-AzSubscription
         if ($AzureContext.Subscription.ToString() -ne $Subscription.ToString())
         {
             try {
-                Write-Host "[Connect-AzSubscription] Switching from subscription '$($AzureContext.Subscription)' to '$($Subscription)'..." -NoNewline
+                Write-Host "[Connect-AzureSubscription] Switching from subscription '$($AzureContext.Subscription)' to '$($Subscription)'..." -NoNewline
                 Set-AzContext -Subscription $Subscription
                 Write-Host 'OK' -ForegroundColor Green
             }
@@ -26,7 +26,7 @@ function Connect-AzSubscription
             }
         }
         else {
-            Write-Host "[Connect-AzSubscription] Connected to Azure subscription '$($Subscription)'..." -NoNewline
+            Write-Host "[Connect-AzureSubscription] Connected to Azure subscription '$($Subscription)'..." -NoNewline
             Write-Host 'OK' -ForegroundColor Green
         }
     }
@@ -37,13 +37,13 @@ function Connect-AzSubscription
             if ($UseManagedIdentity.IsPresent)
             {
                 # With Managed Identity
-                Write-Host "[Connect-AzSubscription] Connecting to Azure subscription '$($Subscription)' using Managed Identity..." -NoNewline
+                Write-Host "[Connect-AzureSubscription] Connecting to Azure subscription '$($Subscription)' using Managed Identity..." -NoNewline
                 Connect-AzAccount -Subscription $Subscription -Identity:$UseManagedIdentity | Out-Null
             }
             else 
             {
                 # Without Managed Identity
-                Write-Host "[Connect-AzSubscription] Connecting to Azure subscription '$($Subscription)' with login popup..." -NoNewline
+                Write-Host "[Connect-AzureSubscription] Connecting to Azure subscription '$($Subscription)' with login popup..." -NoNewline
                 Connect-AzAccount -Subscription $Subscription | Out-Null
             }
             

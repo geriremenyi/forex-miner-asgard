@@ -1,4 +1,4 @@
-# This function is needed because currently ARM templates can't handle local files in lin URIs
+# This function is needed because currently ARM templates can't handle local files in link URIs
 # https://github.com/microsoft/vscode-azurearmtools/issues/588
 function Expand-LinkedArmTemplates
 {
@@ -6,8 +6,12 @@ function Expand-LinkedArmTemplates
     param(
         [Parameter(Mandatory=$true, HelpMessage='The template file to expand')]
         [string] $ArmTemplateFilePath,
+        [Parameter(Mandatory=$true, HelpMessage='The output directory to generate the intermediate and final jsons to.')]
+        [string] $ArmTemplateOutDirectoryPath,
         [Parameter(Mandatory=$false, HelpMessage='The list of already visited files')]
-        [psobject[]] $VisitedArmTemplateFiles = @(@{})
+        [psobject[]] $VisitedArmTemplateFiles = @(@{}),
+        [Parameter(Mandatory=$false, HelpMessage='Iteration counter')]
+        [int] $IterationRound = 1
     )
 
     $ErrorActionPreference = 'Stop'
@@ -69,10 +73,11 @@ function Expand-LinkedArmTemplates
         }
     }
 
-    if($ExpansionHappened)
+    if ($ExpansionHappened)
     {
         # There was an expansion so a new deployment json file must be created
-        $NewTempArmFilePath = Join-Path $PSScriptRoot "..\..\temp\arm\$((New-Guid).Guid).json"
+        $NewArmFileName = "$([System.IO.Path]::GetFileNameWithoutExtension($ArmTemplateFilePath))$($IterationRound).json"
+        $NewTempArmFilePath = Join-Path $ArmTemplateOutDirectoryPath $NewArmFileName
         New-Item $NewTempArmFilePath -Force | Out-Null
         Set-Content $NewTempArmFilePath -Value ($ArmJson | ConvertTo-Json -Depth 100 -Compress)
 
@@ -80,7 +85,13 @@ function Expand-LinkedArmTemplates
         {
             # There was a template expansion so there is a chance that there are more linked templates in the newly expanded template file
             # Recursively call this function to expand even more if needed
-            Expand-LinkedArmTemplates -ArmTemplateFilePath (Resolve-Path $NewTempArmFilePath).Path -VisitedArmTemplateFiles $VisitedArmTemplateFiles | Out-Null
+            $IterationRound += 1
+            Expand-LinkedArmTemplates `
+                -ArmTemplateFilePath (Resolve-Path $NewTempArmFilePath).Path `
+                -ArmTemplateOutDirectoryPath $ArmTemplateOutDirectoryPath `
+                -VisitedArmTemplateFiles $VisitedArmTemplateFiles `
+                -IterationRound $IterationRound `
+            | Out-Null
         }
 
         return (Resolve-Path $NewTempArmFilePath).Path

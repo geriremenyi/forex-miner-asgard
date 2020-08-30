@@ -1,0 +1,35 @@
+name: Continuous Integration
+on: [pull_request]
+jobs:
+  test:
+    name: Generate expanded template
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Init PS module
+      - name: Login to Azure
+        uses: azure/login@v1.1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+      - name: Init PS module
+        shell: pwsh
+        run: ./init.ps1
+      - name: Create test RG
+        shell: pwsh
+        run: New-AzureResourceGroup -ResourceGroupName "forex-miner-ci-test"
+      - name: Test template
+        shell: pwsh
+        run: Test-ArmTemplate -ResourceGroupName "forex-miner-ci-test"
+      - name: Remove test RG
+        shell: pwsh
+        run: Remove-AzureResourceGroup -ResourceGroupName "forex-miner-ci-test"
+      - name: Upload expanded template
+        uses: actions/upload-artifact@v2
+        with:
+          name: forex-miner-test-arm-template
+          path: out/arm/test
+          if-no-files-found: error
+      
+        
