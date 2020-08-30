@@ -19,7 +19,7 @@ jobs:
         shell: pwsh
         run: |
           ./init.ps1
-          Test-ArmTemplate -ResourceGroupName "forex-miner-ci-test"
+          Test-ArmTemplateDeployment -ResourceGroupName "forex-miner-ci-test"
       - name: Remove test resource group
         shell: pwsh
         run: |
