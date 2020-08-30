@@ -64,7 +64,7 @@
         "namingPrefix": "forexminer",
         "namingPrefixShort": "fm",
         "location": "[resourceGroup().location]",
-        "resourceGroupName": "[concat(variables('namingPrefix'), '-aks')]",
+        "resourceGroupName": "[concat(resourceGroup().name, '-aks')]",
         "aksName": "[concat(variables('namingPrefix'), 'aks')]",
         "frontendNodePoolName": "[concat(variables('namingPrefixShort'), 'npfe')]",
         "backendNodePoolName": "[concat(variables('namingPrefixShort'), 'npbe')]",

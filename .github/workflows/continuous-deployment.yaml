@@ -1,0 +1,60 @@
+name: Continuous Deployment
+on:
+  push:
+    branches:
+      - master
+jobs:
+  test-deploy:
+    name: Test deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Init PS module and dependencies
+        shell: pwsh
+        run: ./init.ps1 -ApplicationId "${{ secrets.AZURE_APPLICATION_ID }}" -Secret "${{ secrets.AZURE_SECRET }}" -Tenant "${{ secrets.AZURE_TENANT }}"
+      - name: Create test resource group
+        shell: pwsh
+        run: |
+          ./init.ps1
+          New-AzureResourceGroup -ResourceGroupName "forex-miner-cd-test"
+      - name: Deploy the resources to a test resource group
+        shell: pwsh
+        run: |
+          ./init.ps1
+          New-ArmTemplateDeployment -ResourceGroupName "forex-miner-cd-test"
+      - name: Remove test resource groups
+        if: ${{ always() }}
+        shell: pwsh
+        run: |
+          ./init.ps1
+          Remove-AzureResourceGroup -ResourceGroupName "forex-miner-cd-test"
+          Remove-AzureResourceGroup -ResourceGroupName "forex-miner-cd-test-aks"
+  deploy:
+    name: Deploy infra
+    runs-on: ubuntu-latest
+    needs: [test-deploy]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Init PS module and dependencies
+        shell: pwsh
+        run: ./init.ps1 -ApplicationId "${{ secrets.AZURE_APPLICATION_ID }}" -Secret "${{ secrets.AZURE_SECRET }}" -Tenant "${{ secrets.AZURE_TENANT }}"
+      - name: Create resource group idempotently
+        shell: pwsh
+        run: |
+          ./init.ps1
+          New-AzureResourceGroup -ResourceGroupName "forex-miner"
+      - name: Deploy the resources
+        shell: pwsh
+        run: |
+          ./init.ps1
+          New-ArmTemplateDeployment -ResourceGroupName "forex-miner"
+      - name: Upload deployed template
+        uses: actions/upload-artifact@v2
+        with:
+          name: forex-miner-deployment-arm-template
+          path: out/arm/deployment
+          if-no-files-found: error
+
+        
