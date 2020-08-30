@@ -1,9 +1,8 @@
 name: Continuous Deployment
-on: [pull_request]
-#on:
-#  push:
-#    branches:
-#      - master
+on:
+  push:
+    branches:
+      - master
 jobs:
   test-deploy:
     name: Test deployment
