@@ -25,7 +25,7 @@ jobs:
         run: |
           ./init.ps1
           Remove-AzureResourceGroup -ResourceGroupName "forex-miner-ci-test"
-      - name: Upload expanded template
+      - name: Upload tested template
         uses: actions/upload-artifact@v2
         with:
           name: forex-miner-test-arm-template

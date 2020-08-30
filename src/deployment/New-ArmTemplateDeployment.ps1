@@ -82,7 +82,6 @@ function New-ArmTemplateDeployment
     }
     catch {
         Write-Host 'FAILED' -ForegroundColor Red
-        Resolve-Path (Join-Path $PSScriptRoot '..\..\out\arm') -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
         throw $_
     }
 }

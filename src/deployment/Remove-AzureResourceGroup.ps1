@@ -24,6 +24,7 @@ function Remove-AzureResourceGroup
     else
     {
         Write-Host 'FAILED' -ForegroundColor Yellow
+        Write-Warning "[Remove-AzureResourceGroup] The '$ResourceGroupName' resource group doesn't exist. Skipping the deletion..."
         return
     }
 

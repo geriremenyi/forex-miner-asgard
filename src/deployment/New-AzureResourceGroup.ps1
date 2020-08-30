@@ -16,6 +16,20 @@ function New-AzureResourceGroup
     # Connecting to Azure subscription
     Connect-AzureSubscription -Subscription $Subscription
 
+    # Check that resource group is not already there
+    Write-Host "[New-AzureResourceGroup] Checking that the '$ResourceGroupName' resource group doesn't exist already..." -NoNewline
+    $ResourceGroup = Get-AzResourceGroup -Name $ResourceGroupName -ErrorAction SilentlyContinue
+    if ($ResourceGroup) 
+    {
+        Write-Host 'FAILED' -ForegroundColor Yellow
+        Write-Warning "[New-AzureResourceGroup] The '$ResourceGroupName' resource group exists. Skipping the creation..."
+        return
+    }
+    else 
+    {
+        Write-Host 'OK' -ForegroundColor Green
+    }
+
     # Check that given location is available
     Write-Host "[New-AzureResourceGroup] Checking requested location '$Location'..." -NoNewline
     $RequestedLocation = Get-AzLocation | Where-Object {$_.Location -eq $Location.ToLower()}
