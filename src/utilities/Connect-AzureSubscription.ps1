@@ -2,54 +2,94 @@ function Connect-AzureSubscription
 {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$false, HelpMessage='The subscription id to connect to')]
+        [Parameter(
+            Mandatory=$false,
+            HelpMessage='The subscription id to connect to'
+        )]
         [string] $Subscription = '565174da-8303-4991-96b0-1032d880541e',
-        [Parameter(Mandatory=$false, HelpMessage='Replace the standard popup login with managed identity authentication')]
-        [switch] $UseManagedIdentity
+
+        [Parameter(
+            Mandatory=$false, 
+            HelpMessage='Service principal ApplicationId'
+        )]
+        [string] $ApplicationId,
+
+        [Parameter(
+            Mandatory=$false,
+            HelpMessage='Service principal secret'
+        )]
+        [string] $Secret,
+
+        [Parameter(
+            Mandatory=$false,
+            HelpMessage='Tenant ID for ServicePrincipal authentication'
+        )]
+        [string] $Tenant='048fb62a-b5ac-48b3-99a2-d7f6bb7ff561'
     )
 
+    # Preferences
     $ErrorActionPreference = 'Stop'
 
-    $AzureContext = Get-AzContext
-    if($AzureContext)
+    # Variables
+    $LoginRequired = $true;
+
+    if(($AzureContext = Get-AzContext))
     {
-        # Context switch is needed
+        # There is already some azure login context
         if ($AzureContext.Subscription.ToString() -ne $Subscription.ToString())
         {
-            try {
+            # But that context is not the subscription requested
+            try 
+            {
+                # Try to switch to the requested context
                 Write-Host "[Connect-AzureSubscription] Switching from subscription '$($AzureContext.Subscription)' to '$($Subscription)'..." -NoNewline
                 Set-AzContext -Subscription $Subscription
                 Write-Host 'OK' -ForegroundColor Green
+                $LoginRequired = $false
             }
-            catch {
+            catch 
+            {
+                # It can happen that the switch fails due to the fact that there is a different 
+                # entity logged in which doesn't have access to the subscription requested
                 Write-Host 'FAILED' -ForegroundColor Red
+                $LoginRequired = $true
             }
         }
-        else {
+        else 
+        {
             Write-Host "[Connect-AzureSubscription] Connected to Azure subscription '$($Subscription)'..." -NoNewline
             Write-Host 'OK' -ForegroundColor Green
+            $LoginRequired = $false
         }
     }
-    else
+    
+    if ($LoginRequired)
     {
         # Login is required
-        try {
-            if ($UseManagedIdentity.IsPresent)
+        try 
+        {
+            if (
+                $ApplicationId -and !([string]::IsNullOrEmpty($ApplicationId)) `
+                -and $Secret -and !([string]::IsNullOrEmpty($Secret)) `
+                -and $Tenant -and !([string]::IsNullOrEmpty($Tenant))
+            )
             {
-                # With Managed Identity
-                Write-Host "[Connect-AzureSubscription] Connecting to Azure subscription '$($Subscription)' using Managed Identity..." -NoNewline
-                Connect-AzAccount -Subscription $Subscription -Identity:$UseManagedIdentity | Out-Null
+                # With service principal if both ApplicationId and Secret are present
+                Write-Host "[Connect-AzureSubscription] Connecting to Azure subscription '$($Subscription)' using a ServicePrincipal..." -NoNewline
+                $ServicePrincipalCredentials = New-Object -TypeName System.Management.Automation.PSCredential($ApplicationId, ($Secret | ConvertTo-SecureString))
+                Connect-AzAccount -Subscription $Subscription -ServicePrincipal -Credential $ServicePrincipalCredentials -Tenant $Tenant | Out-Null
             }
             else 
             {
-                # Without Managed Identity
-                Write-Host "[Connect-AzureSubscription] Connecting to Azure subscription '$($Subscription)' with login popup..." -NoNewline
+                # With username and password popup if not
+                Write-Host "[Connect-AzureSubscription] Connecting to Azure subscription '$($Subscription)' with a login popup..." -NoNewline
                 Connect-AzAccount -Subscription $Subscription | Out-Null
             }
             
             Write-Host 'OK' -ForegroundColor Green
         }
-        catch {
+        catch 
+        {
             Write-Host 'FAILED' -ForegroundColor Red
             throw $_
         }   

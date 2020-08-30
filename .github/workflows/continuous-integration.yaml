@@ -2,30 +2,29 @@ name: Continuous Integration
 on: [pull_request]
 jobs:
   test:
-    name: Generate expanded template
+    name: Test template
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Login to Azure
-        uses: azure/login@v1.1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          enable-AzPSSession: true
-      - name: Init PS module
+      - name: Init PS module and dependencies
         shell: pwsh
-        run: ./init.ps1
-      - name: Create test RG
+        run: ./init.ps1 -ApplicationId {{ secrets.AZURE_APPLICATION_ID }} -Secret {{ secrets.AZURE_SECRET }} -Tenant {{ secrets.AZURE_TENANT }}
+      - name: Create test resource group
         shell: pwsh
         run: |
-          ./init.ps1
+          Import-Module -Name "src\ForexMinerAsgard.psm1"
           New-AzureResourceGroup -ResourceGroupName "forex-miner-ci-test"
-      - name: Test template
+      - name: Test template agains test resource group
         shell: pwsh
-        run: Test-ArmTemplate -ResourceGroupName "forex-miner-ci-test"
-      - name: Remove test RG
+        run: |
+          Import-Module -Name "src\ForexMinerAsgard.psm1"
+          Test-ArmTemplate -ResourceGroupName "forex-miner-ci-test"
+      - name: Remove test resource group
         shell: pwsh
-        run: Remove-AzureResourceGroup -ResourceGroupName "forex-miner-ci-test"
+        run: |
+          Import-Module -Name "src\ForexMinerAsgard.psm1" 
+          Remove-AzureResourceGroup -ResourceGroupName "forex-miner-ci-test"
       - name: Upload expanded template
         uses: actions/upload-artifact@v2
         with:
