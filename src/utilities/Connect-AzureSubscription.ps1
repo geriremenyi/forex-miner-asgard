@@ -78,6 +78,8 @@ function Connect-AzureSubscription
                 Write-Host "[Connect-AzureSubscription] Connecting to Azure subscription '$($Subscription)' using a ServicePrincipal..." -NoNewline
                 Write-Host "[Debug]"
                 Write-Host "[Debug] $($Secret.ToString().length)"
+                Write-Host "[Debug] $($ApplicationId.ToString().length)"
+                Write-Host "[Debug] $($Tenant.ToString().length)"
                 $ServicePrincipalCredentials = New-Object -TypeName System.Management.Automation.PSCredential($ApplicationId, ($Secret | ConvertTo-SecureString))
                 Connect-AzAccount -Subscription $Subscription -ServicePrincipal -Credential $ServicePrincipalCredentials -Tenant $Tenant | Out-Null
             }
