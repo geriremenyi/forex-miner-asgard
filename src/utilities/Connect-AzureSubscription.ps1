@@ -76,7 +76,8 @@ function Connect-AzureSubscription
             {
                 # With service principal if both ApplicationId and Secret are present
                 Write-Host "[Connect-AzureSubscription] Connecting to Azure subscription '$($Subscription)' using a ServicePrincipal..." -NoNewline
-                Write-Host "Muste delete these app credentials as debugging: $ApplicationId | $Secret"
+                Write-Host "[Debug]"
+                Write-Host "[Debug] $($Secret.ToString().length)"
                 $ServicePrincipalCredentials = New-Object -TypeName System.Management.Automation.PSCredential($ApplicationId, ($Secret | ConvertTo-SecureString))
                 Connect-AzAccount -Subscription $Subscription -ServicePrincipal -Credential $ServicePrincipalCredentials -Tenant $Tenant | Out-Null
             }
