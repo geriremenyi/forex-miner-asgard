@@ -21,6 +21,7 @@ jobs:
           ./init.ps1
           Test-ArmTemplateDeployment -ResourceGroupName "forex-miner-ci-test"
       - name: Remove test resource group
+        if: ${{ always() }}
         shell: pwsh
         run: |
           ./init.ps1

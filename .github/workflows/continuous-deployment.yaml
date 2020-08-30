@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: Continuous Deployment
 on: [pull_request]
 #on:
 #  push:
@@ -25,6 +25,7 @@ jobs:
           ./init.ps1
           New-ArmTemplateDeployment -ResourceGroupName "forex-miner-cd-test"
       - name: Remove test resource groups
+        if: ${{ always() }}
         shell: pwsh
         run: |
           ./init.ps1

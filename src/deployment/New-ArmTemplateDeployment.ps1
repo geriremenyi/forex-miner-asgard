@@ -58,7 +58,7 @@ function New-ArmTemplateDeployment
     }
 
     # Test the template
-    Test-ArmTemplate -ResourceGroupName $ResourceGroupName -ArmTemplateFilePath $ArmTemplateFile.FullName -ArmParametersFilePath $ArmParametersFile.FullName
+    Test-ArmTemplateDeployment -ResourceGroupName $ResourceGroupName -ArmTemplateFilePath $ArmTemplateFile.FullName -ArmParametersFilePath $ArmParametersFile.FullName
 
     # Cleanup out ARM folder (if folder already exists)
     $OutFolderTimestamp = (Get-Date -format "yyyy-MM-dd_HH-mm").ToString()
