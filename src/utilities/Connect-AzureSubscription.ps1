@@ -76,7 +76,8 @@ function Connect-AzureSubscription
             {
                 # With service principal if both ApplicationId and Secret are present
                 Write-Host "[Connect-AzureSubscription] Connecting to Azure subscription '$($Subscription)' using a ServicePrincipal..." -NoNewline
-                $ServicePrincipalCredentials = New-Object -TypeName System.Management.Automation.PSCredential($ApplicationId, ($Secret | ConvertTo-SecureString))
+                $SecureSecret = $Secret | ConvertTo-SecureString -AsPlainText -Force
+                $ServicePrincipalCredentials = New-Object -TypeName System.Management.Automation.PSCredential($ApplicationId, $SecureSecret)
                 Connect-AzAccount -Subscription $Subscription -ServicePrincipal -Credential $ServicePrincipalCredentials -Tenant $Tenant | Out-Null
             }
             else 
