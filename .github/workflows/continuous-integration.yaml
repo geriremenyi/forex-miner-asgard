@@ -7,7 +7,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Init PS module
       - name: Login to Azure
         uses: azure/login@v1.1
         with:
