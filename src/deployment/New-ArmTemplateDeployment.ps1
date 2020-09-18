@@ -37,7 +37,7 @@ function New-ArmTemplateDeployment
     {
         Write-Host "[New-ArmTemplateDeployment] Searching for the parameters file '$ArmParametersFileName' in the template folder '$TemplateFolder'..." -NoNewline
         $ArmParametersFile = Get-ChildItem $TemplateFolder -Recurse -Filter $ArmParametersFileName -ErrorAction SilentlyContinue
-        if(!$ArmParametersFile)
+        if($ArmParametersFile)
         {
             Write-Host 'OK' -ForegroundColor Green
 
