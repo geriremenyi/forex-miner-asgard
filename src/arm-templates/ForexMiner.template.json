@@ -6,6 +6,7 @@
         "namingPostfix": "dpl",
         "deploymentMode": "Incremental",
         "vnetDeploymentName": "[concat(variables('namingPrefix'), 'vnet', variables('namingPostfix'))]",
+        "ipDeploymentName": "[concat(variables('namingPrefix'), 'ip', variables('namingPostfix'))]",
         "keyvaultDeploymentName": "[concat(variables('namingPrefix'), 'kv', variables('namingPostfix'))]",
         "storageDeploymentName": "[concat(variables('namingPrefix'), 'sa', variables('namingPostfix'))]",
         "sqlDeploymentName": "[concat(variables('namingPrefix'), 'sql', variables('namingPostfix'))]",
@@ -26,6 +27,23 @@
                 },
                 "parametersLink": {
                     "uri": "./vnet/VNet.parameters.json"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[variables('ipDeploymentName')]",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "mode": "[variables('deploymentMode')]",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "templateLink": {
+                    "uri": "./ip/IpAddress.template.json"
+                },
+                "parametersLink": {
+                    "uri": "./ip/IpAddress.parameters.json"
                 }
             }
         },
@@ -90,6 +108,10 @@
             "type": "Microsoft.Resources/deployments",
             "name": "[variables('clusterDeploymentName')]",
             "apiVersion": "2019-10-01",
+            "dependsOn": [ 
+                "[variables('vnetDeploymentName')]",
+                "[variables('ipDeploymentName')]" 
+            ],
             "properties": {
                 "mode": "[variables('deploymentMode')]",
                 "expressionEvaluationOptions": {

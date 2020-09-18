@@ -81,7 +81,7 @@ function Test-ArmTemplateDeployment
         $ExpandedArmTemplateFilePath = Expand-LinkedArmTemplates -ArmTemplateFilePath $ArmTemplateFile.FullName -ArmTemplateOutDirectoryPath (Resolve-Path $ArmTemplateOutDirectoryPath).Path
         if($ArmParametersFilePassed)
         {
-            $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ExpandedArmTemplateFilePath -TemplateParameterFile $ArmParametersFilePath
+            $ArmErrors = Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroup.ResourceGroupName -TemplateFile $ExpandedArmTemplateFilePath -TemplateParameterFile $ArmParametersFile.FullName
         }
         else
         {
