@@ -1,4 +1,5 @@
 # Skip logs and temporary folders
+**/*.log
 **/[Ll]ogs?
 **/[Tt]emp
 **/[Oo]ut
