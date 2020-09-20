@@ -33,6 +33,8 @@ Import-Module -Name $ModulePath -Force:$Force
 
 # Install prerequisites
 Install-AzPowerShellModule
+Install-Helm
+Install-Kubectl
 
 # Connect to the forex-miner Azure subscription
 if (
