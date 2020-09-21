@@ -54,6 +54,11 @@ jobs:
         run: |
           ./init.ps1
           Add-MSIToResourceGroup
+      - name: Initialize AKS cluster
+        shell: pwsh
+        run: |
+          ./init.ps1
+          Invoke-AKSInitialization
       - name: Upload deployed template
         uses: actions/upload-artifact@v2
         with:
