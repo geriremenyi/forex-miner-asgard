@@ -1,0 +1,10 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: forex-miner-sif
+  namespace: ingress
+spec:
+  type: ExternalName
+  externalName: forex-miner-sif.forex-miner.svc.cluster.local
+  ports:
+  - port: 80
