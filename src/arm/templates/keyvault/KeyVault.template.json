@@ -2,6 +2,12 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "namingPrefix": {
+            "type": "string"
+        },
+        "vnetBackendSubnetResourceId": {
+            "type": "string"
+        },
         "sku": {
             "type": "string"
         },
@@ -28,12 +34,8 @@
         }
     },
     "variables": {
-        "namingPrefix": "forexminer",
         "location": "[resourceGroup().location]",
-        "keyVaultName": "[concat(variables('namingPrefix'), 'kv')]",
-        "virtualNetworkName": "[concat(variables('namingPrefix'), 'vnet')]",
-        "backendSubnetName": "[concat(variables('virtualNetworkName'), 'be')]",
-        "backendSubnetResource": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('backendSubnetName'))]"
+        "keyVaultName": "[concat(parameters('namingPrefix'), 'kv')]"
     },
     "resources": [
          {
@@ -55,7 +57,7 @@
                     "bypass": "[parameters('networkAclsBypass')]",
                     "ipRules": [],
                     "virtualNetworkRules": [{
-                        "id": "[variables('backendSubnetResource')]"
+                        "id": "[parameters('vnetBackendSubnetResourceId')]"
                     }]
                 },
                 "tenantId": "[parameters('tenantId')]",

@@ -2,6 +2,15 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "namingPrefix": {
+            "type": "string"
+        },
+        "vnetFrontendSubnetResourceId": {
+            "type": "string"
+        },
+        "vnetBackendSubnetResourceId": {
+            "type": "string"
+        },
         "kubernetesVersion": {
             "type": "string"
         },
@@ -61,20 +70,12 @@
         }
     },
     "variables": {
-        "namingPrefix": "forexminer",
         "namingPrefixShort": "fm",
         "location": "[resourceGroup().location]",
         "resourceGroupName": "[concat(resourceGroup().name, '-aks')]",
-        "aksName": "[concat(variables('namingPrefix'), 'aks')]",
+        "aksName": "[concat(parameters('namingPrefix'), 'aks')]",
         "frontendNodePoolName": "[concat(variables('namingPrefixShort'), 'npfe')]",
-        "backendNodePoolName": "[concat(variables('namingPrefixShort'), 'npbe')]",
-        "ipName": "[concat(variables('namingPrefix'), 'ip')]",
-        "ipResource": "[resourceId('Microsoft.Network/publicIPAddresses', variables('ipName'))]",
-        "virtualNetworkName": "[concat(variables('namingPrefix'), 'vnet')]",
-        "frontendSubnetName": "[concat(variables('virtualNetworkName'), 'fe')]",
-        "frontendSubnetResource": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('frontendSubnetName'))]",
-        "backendSubnetName": "[concat(variables('virtualNetworkName'), 'be')]",
-        "backendSubnetResource": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('backendSubnetName'))]"
+        "backendNodePoolName": "[concat(variables('namingPrefixShort'), 'npbe')]"
     },
     "resources": [
         {
@@ -100,7 +101,7 @@
                         "storageProfile": "ManagedDisks",
                         "type": "VirtualMachineScaleSets",
                         "mode": "System",
-                        "vnetSubnetID": "[variables('frontendSubnetResource')]"
+                        "vnetSubnetID": "[parameters('vnetFrontendSubnetResourceId')]"
                     },
                     {
                         "name": "[variables('backendNodePoolName')]",
@@ -114,7 +115,7 @@
                         "storageProfile": "ManagedDisks",
                         "type": "VirtualMachineScaleSets",
                         "mode": "User",
-                        "vnetSubnetID": "[variables('backendSubnetResource')]"
+                        "vnetSubnetID": "[parameters('vnetBackendSubnetResourceId')]"
                     }
                 ],
                 "networkProfile": {
@@ -123,14 +124,7 @@
                     "serviceCidr": "[parameters('serviceCidr')]",
                     "dnsServiceIP": "[parameters('dnsServiceIP')]",
                     "dockerBridgeCidr": "[parameters('dockerBridgeCidr')]",
-                    "networkPolicy": "[parameters('networkPolicy')]",
-                    "loadBalancerProfile": {
-                        "outboundIPs": {
-                            "publicIPs": [{
-                                "id": "[variables('ipResource')]"
-                            }]
-                        }
-                    }
+                    "networkPolicy": "[parameters('networkPolicy')]"
                 },
                 "apiServerAccessProfile": {
                     "enablePrivateCluster": "[parameters('enablePrivateCluster')]"

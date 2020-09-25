@@ -2,6 +2,9 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "namingPrefix": {
+            "type": "string"
+        },
         "tier": {
             "type": "String"
         },
@@ -34,12 +37,11 @@
         }
     },
     "variables": {
-        "namingPrefix": "forexminer",
         "location": "[resourceGroup().location]",
-        "sqlServerName": "[concat(variables('namingPrefix'), 'sql')]",
-        "sqlServerResource": "[resourceId('Microsoft.Sql/servers/', variables('sqlServerName'))]",
+        "sqlServerName": "[concat(parameters('namingPrefix'), 'sql')]",
+        "sqlServerResourceId": "[resourceId('Microsoft.Sql/servers/', variables('sqlServerName'))]",
         "databaseName": "[concat(variables('sqlServerName'), 'db')]",
-        "administratorLogin": "[concat(variables('namingPrefix'), '-admin')]",
+        "administratorLogin": "[concat(parameters('namingPrefix'), '-admin')]",
         "administratorLoginPassword": "[concat('Fm', uniqueString(resourceGroup().id, guid(deployment().name)), '!')]",
         "collation": "SQL_Latin1_General_CP1_CI_AS"
     },
@@ -59,7 +61,7 @@
                 {
                     "apiVersion": "2019-06-01-preview",
                     "dependsOn": [
-                        "[variables('sqlServerResource')]"
+                        "[variables('sqlServerResourceId')]"
                     ],
                     "location": "[variables('location')]",
                     "name": "[variables('databaseName')]",

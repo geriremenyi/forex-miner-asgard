@@ -42,8 +42,18 @@ function Expand-LinkedArmTemplates
                 throw "[Expand-LinkedArmTemplates] The given ARM parameters path '$TemplateFileFullPath' doesn't exist in the template file 'ArmTemplateFilePath'"
              }
              $ParametersDefined = (Get-Content $ParametersFileFullPath | Out-String | ConvertFrom-Json).parameters
-             $LinkedDeployment.properties | Add-Member -NotePropertyName parameters -NotePropertyValue $ParametersDefined
-             $LinkedDeployment.properties.PSObject.Properties.Remove('parametersLink')
+             if ($LinkedDeployment.Properties.parameters)
+             {
+                # Merge template with the inline defined params, inline comes first always
+                $MergedParameters = Merge-ArmParameters -InlineParameters $LinkedDeployment.Properties.parameters -LinkedParameters $ParametersDefined
+                $LinkedDeployment.Properties.PSObject.Properties.Remove('parameters')
+                $LinkedDeployment.Properties | Add-Member -NotePropertyName parameters -NotePropertyValue $MergedParameters
+             }
+             else
+             {
+                $LinkedDeployment.Properties | Add-Member -NotePropertyName parameters -NotePropertyValue $ParametersDefined
+             }
+             $LinkedDeployment.Properties.PSObject.Properties.Remove('parametersLink')
              $ExpansionHappened = $true
         }
         

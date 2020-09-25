@@ -2,6 +2,9 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "namingPrefix": {
+            "type": "string"
+        },
         "mainAddressSpaces": {
             "type": "array"
         },
@@ -16,9 +19,8 @@
         }
     },
     "variables": {
-        "namingPrefix": "forexminer",
         "location": "[resourceGroup().location]",
-        "virtualNetworkName": "[concat(variables('namingPrefix'), 'vnet')]",
+        "virtualNetworkName": "[concat(parameters('namingPrefix'), 'vnet')]",
         "frontendSubnetName": "[concat(variables('virtualNetworkName'), 'fe')]",
         "backendSubnetName": "[concat(variables('virtualNetworkName'), 'be')]"
     },
@@ -63,5 +65,15 @@
                 "enableDdosProtection": "[parameters('ddosProtectionPlanEnabled')]"
             }
         }
-    ]
+    ],
+    "outputs": {
+        "VnetBackendSubnetResourceId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('backendSubnetName'))]"
+        },
+        "VnetFrontendSubnetResourceId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('backendSubnetName'))]"
+        }
+    }
 }

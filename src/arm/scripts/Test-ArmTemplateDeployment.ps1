@@ -30,7 +30,7 @@ function Test-ArmTemplateDeployment
     }
 
     # Testing the ARM template file path
-    $TemplateFolder = Join-Path -Resolve $PSScriptRoot '..\arm-templates'
+    $TemplateFolder = Join-Path -Resolve $PSScriptRoot '..\templates'
     Write-Host "[Test-ArmTemplateDeployment] Searching for the template file '$ArmTemplateFileName' in the template folder '$TemplateFolder'..." -NoNewline
     $ArmTemplateFile = Get-ChildItem $TemplateFolder -Recurse -Filter $ArmTemplateFileName -ErrorAction SilentlyContinue
     if ($ArmTemplateFile)
@@ -71,12 +71,12 @@ function Test-ArmTemplateDeployment
 
     # Cleanup timestamped ARM folder (if folder already exists)
     $OutFolderTimestamp = (Get-Date -format "yyyy-MM-dd_HH-mm").ToString()
-    Resolve-Path (Join-Path $PSScriptRoot "..\..\out\arm\test\$($OutFolderTimestamp)") -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
+    Resolve-Path (Join-Path $PSScriptRoot "..\..\..\out\arm\test\$($OutFolderTimestamp)") -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
 
     # Testing the ARM template against the resource group
     try {
         Write-Host "[Test-ArmTemplateDeployment] Testing template file '$ArmTemplateFileName'$(if ($ArmParametersFilePassed) { "with parameters file '$ArmParametersFileName'" }) against the resource group '$($ResourceGroup.ResourceGroupName)'..." -NoNewline
-        $ArmTemplateOutDirectoryPath = Join-Path $PSScriptRoot "..\..\out\arm\test\$($OutFolderTimestamp)"
+        $ArmTemplateOutDirectoryPath = Join-Path $PSScriptRoot "..\..\..\out\arm\test\$($OutFolderTimestamp)"
         New-Item $ArmTemplateOutDirectoryPath -ItemType 'directory' -Force | Out-Null
         $ExpandedArmTemplateFilePath = Expand-LinkedArmTemplates -ArmTemplateFilePath $ArmTemplateFile.FullName -ArmTemplateOutDirectoryPath (Resolve-Path $ArmTemplateOutDirectoryPath).Path
         if($ArmParametersFilePassed)

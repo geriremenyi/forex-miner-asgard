@@ -19,7 +19,7 @@ function New-ArmTemplateDeployment
     Connect-AzureSubscription -Subscription $Subscription
 
     # Find the template file in the templates directory by it's name
-    $TemplateFolder = Join-Path -Resolve $PSScriptRoot '..\arm-templates'
+    $TemplateFolder = Join-Path -Resolve $PSScriptRoot '..\templates'
     Write-Host "[New-ArmTemplateDeployment] Searching for the template file '$ArmTemplateFileName' in the template folder '$TemplateFolder'..." -NoNewline
     $ArmTemplateFile = Get-ChildItem $TemplateFolder -Recurse -Filter $ArmTemplateFileName -ErrorAction SilentlyContinue
     if (!$ArmTemplateFile)
@@ -62,10 +62,10 @@ function New-ArmTemplateDeployment
 
     # Cleanup out ARM folder (if folder already exists)
     $OutFolderTimestamp = (Get-Date -format "yyyy-MM-dd_HH-mm").ToString()
-    Resolve-Path (Join-Path $PSScriptRoot "..\..\out\arm\deployment\$($OutFolderTimestamp)") -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
+    Resolve-Path (Join-Path $PSScriptRoot "..\..\..\out\arm\deployment\$($OutFolderTimestamp)") -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
 
     # Deploy the ARM template
-    $ArmTemplateOutDirectoryPath = Join-Path $PSScriptRoot "..\..\out\arm\deployment\$($OutFolderTimestamp)"
+    $ArmTemplateOutDirectoryPath = Join-Path $PSScriptRoot "..\..\..\out\arm\deployment\$($OutFolderTimestamp)"
     New-Item $ArmTemplateOutDirectoryPath -ItemType 'directory' -Force | Out-Null
     $ExpandedArmTemplateFilePath = Expand-LinkedArmTemplates -ArmTemplateFilePath $ArmTemplateFile.FullName -ArmTemplateOutDirectoryPath (Resolve-Path $ArmTemplateOutDirectoryPath).Path
     try {
