@@ -3,14 +3,15 @@
     "contentVersion": "1.0.0.0",
     "variables": {
         "namingPrefix": "forexminer",
-        "namingPostfix": "dpl",
+        "deploymentPostfix": "dpl",
         "deploymentMode": "Incremental",
-        "vnetDeploymentName": "[concat(variables('namingPrefix'), 'vnet', variables('namingPostfix'))]",
-        "ipDeploymentName": "[concat(variables('namingPrefix'), 'ip', variables('namingPostfix'))]",
-        "keyvaultDeploymentName": "[concat(variables('namingPrefix'), 'kv', variables('namingPostfix'))]",
-        "storageDeploymentName": "[concat(variables('namingPrefix'), 'sa', variables('namingPostfix'))]",
-        "sqlDeploymentName": "[concat(variables('namingPrefix'), 'sql', variables('namingPostfix'))]",
-        "clusterDeploymentName": "[concat(variables('namingPrefix'), 'aks', variables('namingPostfix'))]"
+        "vnetDeploymentName": "[concat(variables('namingPrefix'), 'vnet', variables('deploymentPostfix'))]",
+        "ipDeploymentName": "[concat(variables('namingPrefix'), 'ip', variables('deploymentPostfix'))]",
+        "dnsDeploymentName": "[concat(variables('namingPrefix'), 'dns', variables('deploymentPostfix'))]",
+        "keyvaultDeploymentName": "[concat(variables('namingPrefix'), 'kv', variables('deploymentPostfix'))]",
+        "storageDeploymentName": "[concat(variables('namingPrefix'), 'sa', variables('deploymentPostfix'))]",
+        "sqlDeploymentName": "[concat(variables('namingPrefix'), 'sql', variables('deploymentPostfix'))]",
+        "clusterDeploymentName": "[concat(variables('namingPrefix'), 'aks', variables('deploymentPostfix'))]"
     },
     "resources": [
         {
@@ -27,6 +28,11 @@
                 },
                 "parametersLink": {
                     "uri": "./vnet/VNet.parameters.json"
+                },
+                "parameters": {
+                    "namingPrefix": {
+                        "value": "[variables('namingPrefix')]"
+                    }
                 }
             }
         },
@@ -44,6 +50,36 @@
                 },
                 "parametersLink": {
                     "uri": "./ip/IpAddress.parameters.json"
+                },
+                "parameters": {
+                    "namingPrefix": {
+                        "value": "[variables('namingPrefix')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[variables('dnsDeploymentName')]",
+            "apiVersion": "2019-10-01",
+            "dependsOn": [ 
+                "[variables('ipDeploymentName')]" 
+            ],
+            "properties": {
+                "mode": "[variables('deploymentMode')]",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "templateLink": {
+                    "uri": "./dns/DNSZone.template.json"
+                },
+                "parametersLink": {
+                    "uri": "./dns/DNSZone.parameters.json"
+                },
+                "parameters": {
+                    "ipAddress": {
+                        "value": "[reference(variables('ipDeploymentName')).outputs.IpAddress.value]"
+                    }
                 }
             }
         },
@@ -64,6 +100,14 @@
                 },
                 "parametersLink": {
                     "uri": "./keyvault/KeyVault.parameters.json"
+                },
+                "parameters": {
+                    "namingPrefix": {
+                        "value": "[variables('namingPrefix')]"
+                    },
+                    "vnetBackendSubnetResourceId": {
+                        "value": "[reference(variables('vnetDeploymentName')).outputs.VnetBackendSubnetResourceId.value]"
+                    }
                 }
             }
         },
@@ -84,6 +128,14 @@
                 },
                 "parametersLink": {
                     "uri": "./storage/StorageAccount.parameters.json"
+                },
+                "parameters": {
+                    "namingPrefix": {
+                        "value": "[variables('namingPrefix')]"
+                    },
+                    "vnetBackendSubnetResourceId": {
+                        "value": "[reference(variables('vnetDeploymentName')).outputs.VnetBackendSubnetResourceId.value]"
+                    }
                 }
             }
         },
@@ -101,6 +153,11 @@
                 },
                 "parametersLink": {
                     "uri": "./sql/SqlServer.parameters.json"
+                },
+                "parameters": {
+                    "namingPrefix": {
+                        "value": "[variables('namingPrefix')]"
+                    }
                 }
             }
         },
@@ -109,8 +166,7 @@
             "name": "[variables('clusterDeploymentName')]",
             "apiVersion": "2019-10-01",
             "dependsOn": [ 
-                "[variables('vnetDeploymentName')]",
-                "[variables('ipDeploymentName')]" 
+                "[variables('vnetDeploymentName')]"
             ],
             "properties": {
                 "mode": "[variables('deploymentMode')]",
@@ -122,6 +178,17 @@
                 },
                 "parametersLink": {
                     "uri": "./cluster/AzureKubernetesService.parameters.json"
+                },
+                "parameters": {
+                    "namingPrefix": {
+                        "value": "[variables('namingPrefix')]"
+                    },
+                    "vnetBackendSubnetResourceId": {
+                        "value": "[reference(variables('vnetDeploymentName')).outputs.VnetBackendSubnetResourceId.value]"
+                    },
+                    "vnetFrontendSubnetResourceId": {
+                        "value": "[reference(variables('vnetDeploymentName')).outputs.VnetFrontendSubnetResourceId.value]"
+                    }
                 }
             }
         }

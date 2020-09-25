@@ -2,6 +2,12 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "namingPrefix": {
+            "type": "string"
+        },
+        "vnetBackendSubnetResourceId": {
+            "type": "string"
+        },
         "accountType": {
             "type": "string"
         },
@@ -25,12 +31,8 @@
         }
     },
     "variables": {
-        "namingPrefix": "forexminer",
         "location": "[resourceGroup().location]",
-        "storageAccountName": "[concat(variables('namingPrefix'), 'sa')]",
-        "virtualNetworkName": "[concat(variables('namingPrefix'), 'vnet')]",
-        "backendSubnetName": "[concat(variables('virtualNetworkName'), 'be')]",
-        "backendSubnetResource": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('backendSubnetName'))]"
+        "storageAccountName": "[concat(parameters('namingPrefix'), 'sa')]"
     },
     "resources": [
         {
@@ -46,7 +48,7 @@
                     "bypass": "[parameters('networkAclsBypass')]",
                     "ipRules": [],
                     "virtualNetworkRules": [{
-                        "id": "[variables('backendSubnetResource')]"
+                        "id": "[parameters('vnetBackendSubnetResourceId')]"
                     }]
                 },
                 "largeFileSharesState": "[parameters('largeFileSharesState')]"
