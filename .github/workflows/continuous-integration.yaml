@@ -1,0 +1,36 @@
+name: Continuous Integration
+on: [pull_request]
+jobs:
+  test:
+    name: Test template
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Init PS module and dependencies
+        shell: pwsh
+        run: ./init.ps1 -ApplicationId "${{ secrets.AZURE_APPLICATION_ID }}" -Secret "${{ secrets.AZURE_SECRET }}" -Tenant "${{ secrets.AZURE_TENANT }}"
+      - name: Create test resource group
+        shell: pwsh
+        run: |
+          ./init.ps1
+          New-AzureResourceGroup -ResourceGroupName "forex-miner-ci-test"
+      - name: Test template agains test resource group
+        shell: pwsh
+        run: |
+          ./init.ps1
+          Test-ArmTemplateDeployment -ResourceGroupName "forex-miner-ci-test"
+      - name: Remove test resource group
+        if: ${{ always() }}
+        shell: pwsh
+        run: |
+          ./init.ps1
+          Remove-AzureResourceGroup -ResourceGroupName "forex-miner-ci-test"
+      - name: Upload tested template
+        uses: actions/upload-artifact@v2
+        with:
+          name: forex-miner-test-arm-template
+          path: out/arm/test
+          if-no-files-found: error
+      
+        

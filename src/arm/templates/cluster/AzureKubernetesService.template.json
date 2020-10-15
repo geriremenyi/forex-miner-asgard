@@ -1,0 +1,143 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "namingPrefix": {
+            "type": "string"
+        },
+        "vnetFrontendSubnetResourceId": {
+            "type": "string"
+        },
+        "vnetBackendSubnetResourceId": {
+            "type": "string"
+        },
+        "kubernetesVersion": {
+            "type": "string"
+        },
+        "enableRBAC": {
+            "type": "bool"
+        },
+        "dnsPrefix": {
+            "type": "string"
+        },
+        "osDiskSizeGB": {
+            "type": "int"
+        },
+        "frontendNodePoolVmSize": {
+            "type": "string"
+        },
+        "frontendNodePoolVmCount": {
+            "type": "int"
+        },
+        "frontendNodePoolVmMinCount": {
+            "type": "int"
+        },
+        "frontendNodePoolVmMaxCount": {
+            "type": "int"
+        },
+        "backendNodePoolVmSize": {
+            "type": "string"
+        },
+        "backendNodePoolVmCount": {
+            "type": "int"
+        },
+        "backendNodePoolVmMinCount": {
+            "type": "int"
+        },
+        "backendNodePoolVmMaxCount": {
+            "type": "int"
+        },
+        "networkPlugin": {
+            "type": "string"
+        },
+        "serviceCidr": {
+            "type": "string"
+        },
+        "dnsServiceIP": {
+            "type": "string"
+        },
+        "dockerBridgeCidr": {
+            "type": "string"
+        },
+        "networkPolicy": {
+            "type": "string"
+        },
+        "enablePrivateCluster": {
+            "type": "bool"
+        },
+        "enableHttpApplicationRouting": {
+            "type": "bool"
+        }
+    },
+    "variables": {
+        "namingPrefixShort": "fm",
+        "location": "[resourceGroup().location]",
+        "resourceGroupName": "[concat(resourceGroup().name, '-aks')]",
+        "aksName": "[concat(parameters('namingPrefix'), 'aks')]",
+        "frontendNodePoolName": "[concat(variables('namingPrefixShort'), 'npfe')]",
+        "backendNodePoolName": "[concat(variables('namingPrefixShort'), 'npbe')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2020-06-01",
+            "type": "Microsoft.ContainerService/managedClusters",
+            "location": "[variables('location')]",
+            "name": "[variables('aksName')]",
+            "properties": {
+                "nodeResourceGroup": "[variables('resourceGroupName')]",
+                "kubernetesVersion": "[parameters('kubernetesVersion')]",
+                "enableRBAC": "[parameters('enableRBAC')]",
+                "dnsPrefix": "[parameters('dnsPrefix')]",
+                "agentPoolProfiles": [
+                    {
+                        "name": "[variables('frontendNodePoolName')]",
+                        "osDiskSizeGB": "[parameters('osDiskSizeGB')]",
+                        "vmSize": "[parameters('frontendNodePoolVmSize')]",
+                        "count": "[parameters('frontendNodePoolVmCount')]",
+                        "enableAutoScaling": true,
+                        "minCount": "[parameters('frontendNodePoolVmMinCount')]",
+                        "maxCount": "[parameters('frontendNodePoolVmMaxCount')]",
+                        "osType": "Linux",
+                        "storageProfile": "ManagedDisks",
+                        "type": "VirtualMachineScaleSets",
+                        "mode": "System",
+                        "vnetSubnetID": "[parameters('vnetFrontendSubnetResourceId')]"
+                    },
+                    {
+                        "name": "[variables('backendNodePoolName')]",
+                        "osDiskSizeGB": "[parameters('osDiskSizeGB')]",
+                        "vmSize": "[parameters('backendNodePoolVmSize')]",
+                        "count": "[parameters('backendNodePoolVmCount')]",
+                        "enableAutoScaling": true,
+                        "minCount": "[parameters('backendNodePoolVmMinCount')]",
+                        "maxCount": "[parameters('backendNodePoolVmMaxCount')]",
+                        "osType": "Linux",
+                        "storageProfile": "ManagedDisks",
+                        "type": "VirtualMachineScaleSets",
+                        "mode": "User",
+                        "vnetSubnetID": "[parameters('vnetBackendSubnetResourceId')]"
+                    }
+                ],
+                "networkProfile": {
+                    "loadBalancerSku": "standard",
+                    "networkPlugin": "[parameters('networkPlugin')]",
+                    "serviceCidr": "[parameters('serviceCidr')]",
+                    "dnsServiceIP": "[parameters('dnsServiceIP')]",
+                    "dockerBridgeCidr": "[parameters('dockerBridgeCidr')]",
+                    "networkPolicy": "[parameters('networkPolicy')]"
+                },
+                "apiServerAccessProfile": {
+                    "enablePrivateCluster": "[parameters('enablePrivateCluster')]"
+                },
+                "addonProfiles": {
+                    "httpApplicationRouting": {
+                        "enabled": "[parameters('enableHttpApplicationRouting')]"
+                    }
+                }
+            },
+            "identity": {
+                "type": "SystemAssigned"
+            }
+        }
+    ]
+}

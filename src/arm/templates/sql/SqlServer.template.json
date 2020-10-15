@@ -1,0 +1,88 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "namingPrefix": {
+            "type": "string"
+        },
+        "tier": {
+            "type": "String"
+        },
+        "skuName": {
+            "type": "String"
+        },
+        "maxSizeBytes": {
+            "type": "Int"
+        },
+        "sampleName": {
+            "type": "String"
+        },
+        "zoneRedundant": {
+            "type": "Bool"
+        },
+        "licenseType": {
+            "type": "String"
+        },
+        "readScaleOut": {
+            "type": "String"
+        },
+        "numberOfReplicas": {
+            "type": "Int"
+        },
+        "minCapacity": {
+            "type": "String"
+        },
+        "autoPauseDelay": {
+            "type": "String"
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "sqlServerName": "[concat(parameters('namingPrefix'), 'sql')]",
+        "sqlServerResourceId": "[resourceId('Microsoft.Sql/servers/', variables('sqlServerName'))]",
+        "databaseName": "[concat(variables('sqlServerName'), 'db')]",
+        "administratorLogin": "[concat(parameters('namingPrefix'), '-admin')]",
+        "administratorLoginPassword": "[concat('Fm', uniqueString(resourceGroup().id, guid(deployment().name)), '!')]",
+        "collation": "SQL_Latin1_General_CP1_CI_AS"
+    },
+    "resources": [
+        {
+            "apiVersion": "2019-06-01-preview",
+            "type": "Microsoft.Sql/servers",
+            "location": "[variables('location')]",
+            "name": "[variables('sqlServerName')]",
+            "properties": {
+                "administratorLogin": "[variables('administratorLogin')]",
+                "administratorLoginPassword": "[variables('administratorLoginPassword')]",
+                "version": "12.0"
+            },
+            "identity": "[json('null')]",
+            "resources": [
+                {
+                    "apiVersion": "2019-06-01-preview",
+                    "dependsOn": [
+                        "[variables('sqlServerResourceId')]"
+                    ],
+                    "location": "[variables('location')]",
+                    "name": "[variables('databaseName')]",
+                    "sku": {
+                        "tier": "[parameters('tier')]",
+                        "name": "[parameters('skuName')]"
+                    },
+                    "properties": {
+                        "collation": "[variables('collation')]",
+                        "maxSizeBytes": "[parameters('maxSizeBytes')]",
+                        "sampleName": "[parameters('sampleName')]",
+                        "zoneRedundant": "[parameters('zoneRedundant')]",
+                        "licenseType": "[parameters('licenseType')]",
+                        "readScale": "[parameters('readScaleOut')]",
+                        "readReplicaCount": "[parameters('numberOfReplicas')]",
+                        "minCapacity": "[parameters('minCapacity')]",
+                        "autoPauseDelay": "[parameters('autoPauseDelay')]"
+                    },
+                    "type": "databases"
+                }
+            ]
+        }
+    ]
+}

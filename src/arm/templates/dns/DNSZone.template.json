@@ -1,0 +1,40 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "dnsZonesName": {
+            "type": "string"
+        },
+        "ipAddress": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/dnszones",
+            "apiVersion": "2018-05-01",
+            "name": "[parameters('dnsZonesName')]",
+            "location": "global",
+            "properties": {
+                "zoneType": "Public"
+            }
+        },
+        {
+            "type": "Microsoft.Network/dnszones/A",
+            "apiVersion": "2018-05-01",
+            "name": "[concat(parameters('dnsZonesName'), '/@')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('dnsZonesName'))]"
+            ],
+            "properties": {
+                "TTL": 1800,
+                "ARecords": [
+                    {
+                        "ipv4Address": "[parameters('ipAddress')]"
+                    }
+                ],
+                "targetResource": {}
+            }
+        }
+    ]
+}

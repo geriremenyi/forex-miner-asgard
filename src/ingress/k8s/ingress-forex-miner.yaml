@@ -1,0 +1,23 @@
+kind: Ingress
+apiVersion: networking.k8s.io/v1beta1
+metadata:
+  name: forex-miner-ingress
+  namespace: ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  tls:
+  - hosts:
+    - forex-miner.com
+    secretName: tls-secret
+  rules:
+  - host: forex-miner.com
+    http:
+      paths:
+      - backend:
+          serviceName: forex-miner-sif
+          servicePort: 80
+        path: /(.*)

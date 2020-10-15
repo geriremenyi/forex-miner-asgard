@@ -1,0 +1,79 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "namingPrefix": {
+            "type": "string"
+        },
+        "mainAddressSpaces": {
+            "type": "array"
+        },
+        "frontendSubnetAddressSpace": {
+            "type": "string"
+        },
+        "backendSubnetAddressSpace": {
+            "type": "string"
+        },
+        "ddosProtectionPlanEnabled": {
+            "type": "bool"
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "virtualNetworkName": "[concat(parameters('namingPrefix'), 'vnet')]",
+        "frontendSubnetName": "[concat(variables('virtualNetworkName'), 'fe')]",
+        "backendSubnetName": "[concat(variables('virtualNetworkName'), 'be')]"
+    },
+    "resources": [
+        {
+            "name": "[variables('virtualNetworkName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2019-09-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": "[parameters('mainAddressSpaces')]"
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('frontendSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('frontendSubnetAddressSpace')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('backendSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('backendSubnetAddressSpace')]",
+                            "serviceEndpoints": [
+                                {
+                                    "service": "Microsoft.Storage",
+                                    "locations": [ 
+                                        "[variables('location')]" 
+                                    ]
+                                },
+                                {
+                                    "service": "Microsoft.KeyVault",
+                                    "locations": [ 
+                                        "[variables('location')]"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "enableDdosProtection": "[parameters('ddosProtectionPlanEnabled')]"
+            }
+        }
+    ],
+    "outputs": {
+        "VnetBackendSubnetResourceId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('backendSubnetName'))]"
+        },
+        "VnetFrontendSubnetResourceId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('backendSubnetName'))]"
+        }
+    }
+}

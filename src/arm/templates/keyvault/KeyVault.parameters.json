@@ -1,0 +1,36 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "namingPrefix": {
+            "value": "forexminer"
+        },
+        "vnetBackendSubnetResourceId": {
+            "value": ""
+        },
+        "sku": {
+            "value": "Standard"
+        },
+        "enabledForDeployment": {
+            "value": false
+        },
+        "enabledForTemplateDeployment": {
+            "value": false
+        },
+        "enabledForDiskEncryption": {
+            "value": false
+        },
+        "enableRbacAuthorization": {
+            "value": false
+        },
+        "networkAclsDefaultAction": {
+            "value": "Deny"
+        },
+        "networkAclsBypass": {
+            "value": "AzureServices"
+        },
+        "tenantId": {
+            "value": "048fb62a-b5ac-48b3-99a2-d7f6bb7ff561"
+        }
+    }
+}

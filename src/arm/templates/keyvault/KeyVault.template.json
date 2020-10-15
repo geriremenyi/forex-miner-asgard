@@ -1,0 +1,68 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "namingPrefix": {
+            "type": "string"
+        },
+        "vnetBackendSubnetResourceId": {
+            "type": "string"
+        },
+        "sku": {
+            "type": "string"
+        },
+        "enabledForDeployment": {
+            "type": "bool"
+        },
+        "enabledForTemplateDeployment": {
+            "type": "bool"
+        },
+        "enabledForDiskEncryption": {
+            "type": "bool"
+        },
+        "enableRbacAuthorization": {
+            "type": "bool"
+        },
+        "networkAclsDefaultAction": {
+            "type": "string"
+        },
+        "networkAclsBypass": {
+            "type": "string"
+        },
+        "tenantId": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "keyVaultName": "[concat(parameters('namingPrefix'), 'kv')]"
+    },
+    "resources": [
+         {
+            "apiVersion": "2016-10-01",
+            "name": "[variables('keyVaultName')]",
+            "location": "[variables('location')]",
+            "type": "Microsoft.KeyVault/vaults",
+            "properties": {
+                "sku": {
+                    "name": "[parameters('sku')]",
+                    "family": "A"
+                },
+                "enabledForDeployment": "[parameters('enabledForDeployment')]",
+                "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
+                "enabledForDiskEncryption": "[parameters('enabledForDiskEncryption')]",
+                "enableRbacAuthorization": "[parameters('enableRbacAuthorization')]",
+                "networkAcls": {
+                    "defaultAction": "[parameters('networkAclsDefaultAction')]",
+                    "bypass": "[parameters('networkAclsBypass')]",
+                    "ipRules": [],
+                    "virtualNetworkRules": [{
+                        "id": "[parameters('vnetBackendSubnetResourceId')]"
+                    }]
+                },
+                "tenantId": "[parameters('tenantId')]",
+                "accessPolicies": []
+            }
+        }
+    ]
+}

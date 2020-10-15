@@ -1,0 +1,196 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "variables": {
+        "namingPrefix": "forexminer",
+        "deploymentPostfix": "dpl",
+        "deploymentMode": "Incremental",
+        "vnetDeploymentName": "[concat(variables('namingPrefix'), 'vnet', variables('deploymentPostfix'))]",
+        "ipDeploymentName": "[concat(variables('namingPrefix'), 'ip', variables('deploymentPostfix'))]",
+        "dnsDeploymentName": "[concat(variables('namingPrefix'), 'dns', variables('deploymentPostfix'))]",
+        "keyvaultDeploymentName": "[concat(variables('namingPrefix'), 'kv', variables('deploymentPostfix'))]",
+        "storageDeploymentName": "[concat(variables('namingPrefix'), 'sa', variables('deploymentPostfix'))]",
+        "sqlDeploymentName": "[concat(variables('namingPrefix'), 'sql', variables('deploymentPostfix'))]",
+        "clusterDeploymentName": "[concat(variables('namingPrefix'), 'aks', variables('deploymentPostfix'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[variables('vnetDeploymentName')]",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "mode": "[variables('deploymentMode')]",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "templateLink": {
+                    "uri": "./vnet/VNet.template.json"
+                },
+                "parametersLink": {
+                    "uri": "./vnet/VNet.parameters.json"
+                },
+                "parameters": {
+                    "namingPrefix": {
+                        "value": "[variables('namingPrefix')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[variables('ipDeploymentName')]",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "mode": "[variables('deploymentMode')]",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "templateLink": {
+                    "uri": "./ip/IpAddress.template.json"
+                },
+                "parametersLink": {
+                    "uri": "./ip/IpAddress.parameters.json"
+                },
+                "parameters": {
+                    "namingPrefix": {
+                        "value": "[variables('namingPrefix')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[variables('dnsDeploymentName')]",
+            "apiVersion": "2019-10-01",
+            "dependsOn": [ 
+                "[variables('ipDeploymentName')]" 
+            ],
+            "properties": {
+                "mode": "[variables('deploymentMode')]",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "templateLink": {
+                    "uri": "./dns/DNSZone.template.json"
+                },
+                "parametersLink": {
+                    "uri": "./dns/DNSZone.parameters.json"
+                },
+                "parameters": {
+                    "ipAddress": {
+                        "value": "[reference(variables('ipDeploymentName')).outputs.IpAddress.value]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[variables('keyvaultDeploymentName')]",
+            "apiVersion": "2019-10-01",
+            "dependsOn": [ 
+                "[variables('vnetDeploymentName')]" 
+            ],
+            "properties": {
+                "mode": "[variables('deploymentMode')]",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "templateLink": {
+                    "uri": "./keyvault/KeyVault.template.json"
+                },
+                "parametersLink": {
+                    "uri": "./keyvault/KeyVault.parameters.json"
+                },
+                "parameters": {
+                    "namingPrefix": {
+                        "value": "[variables('namingPrefix')]"
+                    },
+                    "vnetBackendSubnetResourceId": {
+                        "value": "[reference(variables('vnetDeploymentName')).outputs.VnetBackendSubnetResourceId.value]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[variables('storageDeploymentName')]",
+            "apiVersion": "2019-10-01",
+            "dependsOn": [ 
+                "[variables('vnetDeploymentName')]" 
+            ],
+            "properties": {
+                "mode": "[variables('deploymentMode')]",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "templateLink": {
+                    "uri": "./storage/StorageAccount.template.json"
+                },
+                "parametersLink": {
+                    "uri": "./storage/StorageAccount.parameters.json"
+                },
+                "parameters": {
+                    "namingPrefix": {
+                        "value": "[variables('namingPrefix')]"
+                    },
+                    "vnetBackendSubnetResourceId": {
+                        "value": "[reference(variables('vnetDeploymentName')).outputs.VnetBackendSubnetResourceId.value]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[variables('sqlDeploymentName')]",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "mode": "[variables('deploymentMode')]",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "templateLink": {
+                    "uri": "./sql/SqlServer.template.json"
+                },
+                "parametersLink": {
+                    "uri": "./sql/SqlServer.parameters.json"
+                },
+                "parameters": {
+                    "namingPrefix": {
+                        "value": "[variables('namingPrefix')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[variables('clusterDeploymentName')]",
+            "apiVersion": "2019-10-01",
+            "dependsOn": [ 
+                "[variables('vnetDeploymentName')]"
+            ],
+            "properties": {
+                "mode": "[variables('deploymentMode')]",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "templateLink": {
+                    "uri": "./cluster/AzureKubernetesService.template.json"
+                },
+                "parametersLink": {
+                    "uri": "./cluster/AzureKubernetesService.parameters.json"
+                },
+                "parameters": {
+                    "namingPrefix": {
+                        "value": "[variables('namingPrefix')]"
+                    },
+                    "vnetBackendSubnetResourceId": {
+                        "value": "[reference(variables('vnetDeploymentName')).outputs.VnetBackendSubnetResourceId.value]"
+                    },
+                    "vnetFrontendSubnetResourceId": {
+                        "value": "[reference(variables('vnetDeploymentName')).outputs.VnetFrontendSubnetResourceId.value]"
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,39 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "namingPrefix": {
+            "value": "forexminer"
+        },
+        "tier": {
+            "value": "GeneralPurpose"
+        },
+        "skuName": {
+            "value": "GP_S_Gen5_2"
+        },
+        "maxSizeBytes": {
+            "value": 10737418240
+        },
+        "sampleName": {
+            "value": ""
+        },
+        "zoneRedundant": {
+            "value": false
+        },
+        "licenseType": {
+            "value": ""
+        },
+        "readScaleOut": {
+            "value": "Disabled"
+        },
+        "numberOfReplicas": {
+            "value": 0
+        },
+        "minCapacity": {
+            "value": "0.5"
+        },
+        "autoPauseDelay": {
+            "value": "60"
+        }
+    }
+}
