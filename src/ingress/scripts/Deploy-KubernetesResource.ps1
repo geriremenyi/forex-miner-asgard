@@ -17,7 +17,7 @@ function Deploy-KubernetesResource
     $KubernetesResourceFolder = Join-Path -Resolve $PSScriptRoot '../k8s'
     if ($ResourceFolder)
     {
-        $KubernetesResourceFolder = Join-Path -Resolve $ResourceFolder
+        $KubernetesResourceFolder = (Resolve-Path $ResourceFolder).Path
     }
     $ResourceYamlFile = Get-ChildItem $KubernetesResourceFolder -Recurse -Filter $ResourceYamlFileName -ErrorAction SilentlyContinue
     if($ResourceYamlFile)
