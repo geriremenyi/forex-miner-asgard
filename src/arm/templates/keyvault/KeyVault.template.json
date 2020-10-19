@@ -8,6 +8,9 @@
         "vnetBackendSubnetResourceId": {
             "type": "string"
         },
+         "vnetFrontendSubnetResourceId": {
+            "type": "string"
+        },
         "sku": {
             "type": "string"
         },
@@ -56,9 +59,14 @@
                     "defaultAction": "[parameters('networkAclsDefaultAction')]",
                     "bypass": "[parameters('networkAclsBypass')]",
                     "ipRules": [],
-                    "virtualNetworkRules": [{
-                        "id": "[parameters('vnetBackendSubnetResourceId')]"
-                    }]
+                    "virtualNetworkRules": [
+                        {
+                            "id": "[parameters('vnetBackendSubnetResourceId')]"
+                        },
+                        {
+                            "id": "[parameters('vnetFrontendSubnetResourceId')]"
+                        }
+                    ]
                 },
                 "tenantId": "[parameters('tenantId')]",
                 "accessPolicies": []
