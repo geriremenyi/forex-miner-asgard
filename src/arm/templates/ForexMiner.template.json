@@ -107,6 +107,9 @@
                     },
                     "vnetBackendSubnetResourceId": {
                         "value": "[reference(variables('vnetDeploymentName')).outputs.VnetBackendSubnetResourceId.value]"
+                    },
+                    "vnetFrontendSubnetResourceId": {
+                        "value": "[reference(variables('vnetDeploymentName')).outputs.VnetFrontendSubnetResourceId.value]"
                     }
                 }
             }
@@ -135,6 +138,9 @@
                     },
                     "vnetBackendSubnetResourceId": {
                         "value": "[reference(variables('vnetDeploymentName')).outputs.VnetBackendSubnetResourceId.value]"
+                    },
+                    "vnetFrontendSubnetResourceId": {
+                        "value": "[reference(variables('vnetDeploymentName')).outputs.VnetFrontendSubnetResourceId.value]"
                     }
                 }
             }

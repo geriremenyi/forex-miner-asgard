@@ -8,6 +8,9 @@
         "vnetBackendSubnetResourceId": {
             "value": ""
         },
+        "vnetFrontendSubnetResourceId": {
+            "value": ""
+        },
         "accountType": {
             "value": "Standard_LRS"
         },
