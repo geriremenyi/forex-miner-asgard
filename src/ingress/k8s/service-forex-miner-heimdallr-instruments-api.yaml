@@ -1,0 +1,10 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: forex-miner-heimdallr-instruments-api
+  namespace: ingress
+spec:
+  type: ExternalName
+  externalName: forex-miner-heimdallr-instruments-api.forex-miner.svc.cluster.local
+  ports:
+  - port: 80
