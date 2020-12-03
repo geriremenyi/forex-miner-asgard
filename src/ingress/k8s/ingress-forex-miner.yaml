@@ -5,7 +5,6 @@ metadata:
   namespace: ingress
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
     nginx.ingress.kubernetes.io/use-regex: "true"
     cert-manager.io/cluster-issuer: letsencrypt
 spec:
@@ -18,6 +17,18 @@ spec:
     http:
       paths:
       - backend:
+          serviceName: forex-miner-heimdallr-instruments-api
+          servicePort: 80
+        path: /api/.*/instruments
+      - backend:
+          serviceName: forex-miner-heimdallr-connections-api
+          servicePort: 80
+        path: /api/.*/users/me/connections
+      - backend:
+          serviceName: forex-miner-heimdallr-users-api
+          servicePort: 80
+        path: /api/.*/users/.*
+      - backend:
           serviceName: forex-miner-sif
           servicePort: 80
-        path: /(.*)
+        path: /
