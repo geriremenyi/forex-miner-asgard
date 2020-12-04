@@ -3,7 +3,10 @@ function Deploy-KubernetesResource
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true, HelpMessage='The resource yaml file to deploy')]
-        [string] $ResourceYamlFileName
+        [string] $ResourceYamlFileName,
+
+        [Parameter(Mandatory=$false, HelpMessage='The folder in which the resource file is in')]
+        [string] $ResourceFolder
     )
 
     # Preferences 
@@ -12,6 +15,10 @@ function Deploy-KubernetesResource
     # Find the resource yaml file
     Write-Host "[Deploy-KubernetesResource] Checking that '$ResourceYamlFileName' exists..." -NoNewline
     $KubernetesResourceFolder = Join-Path -Resolve $PSScriptRoot '../k8s'
+    if ($ResourceFolder)
+    {
+        $KubernetesResourceFolder = (Resolve-Path $ResourceFolder).Path
+    }
     $ResourceYamlFile = Get-ChildItem $KubernetesResourceFolder -Recurse -Filter $ResourceYamlFileName -ErrorAction SilentlyContinue
     if($ResourceYamlFile)
     {
