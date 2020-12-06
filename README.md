@@ -10,7 +10,7 @@ The repo's name is coming from the Norse mythology, in which [Asgard](https://en
 
 - [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7.1) to run.
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) to be able to run kubernetes cluster setup scripts.
-- [Helm](https://helm.sh/docs/intro/install/) (optional) to be able to install 3rd apps and services to the cluster.
+- [Helm](https://helm.sh/docs/intro/install/) to be able to install 3rd apps and services to the cluster.
 - [Visual Studio Code](https://code.visualstudio.com/) (optional) as the IDE.
 
 ### Local setup
