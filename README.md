@@ -75,12 +75,12 @@ All pull request opened against any branches triggers a continuous integration w
 
 The steps are defined in the [`continuous_integration.yaml` file](.github/workflows/continuous_integration.yaml).
 
-Recently ran integrations can be found [here](https://github.com/geriremenyi/forex-miner-sif/actions?query=workflow%3A"Continuous+Integration").
+Recently ran integrations can be found [here](https://github.com/geriremenyi/forex-miner-asgard/actions?query=workflow%3A"Continuous+Integration").
 
 #### Continuous deployment
 
-All changes on the [master branch](https://github.com/geriremenyi/forex-miner-sif/tree/master) triggers a deployment which actually creates the cluster in the target subscription's resource group. ARM remplate deployment in theory idempotent action and all steps which were not idempotent were made that way via wrapper scripts. This should make sure that any change in the infra code will trigger a gradual update if possible.
+All changes on the [master branch](https://github.com/geriremenyi/forex-miner-asgard/tree/master) triggers a deployment which actually creates the cluster in the target subscription's resource group. ARM remplate deployment in theory idempotent action and all steps which were not idempotent were made that way via wrapper scripts. This should make sure that any change in the infra code will trigger a gradual update if possible.
 
 The steps are defined in the [`continuous_deployment.yaml` file](.github/workflows/continuous_deployment.yaml).
 
-Recently ran deployments can be found [here](https://github.com/geriremenyi/forex-miner-sif/actions?query=workflow%3A"Continuous+Deployment").
+Recently ran deployments can be found [here](https://github.com/geriremenyi/forex-miner-asgard/actions?query=workflow%3A"Continuous+Deployment").
